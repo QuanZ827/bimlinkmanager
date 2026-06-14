@@ -7,6 +7,10 @@ reference type once, and create every link in a single pass — instead of
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
+<p align="center">
+  <img src="demo/bim-link-manager-demo.gif" alt="BIM Link Manager — browse the ACC hub/project/folder tree, check the models, set workset/positioning/reference type once, then batch-link in a single pass with a live import console">
+</p>
+
 ## Why
 
 Linking cloud-hosted models in Revit is a one-at-a-time chore. The official automation
