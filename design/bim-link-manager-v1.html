@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BIM Link Manager — UI Export v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--surface:#FFFFFF;--surface-lowest:#F4F5F6;--surface-low:#F9FAFB;--surface-container:#EFEFEF;--surface-high:#E8E8E8;--surface-highest:#DCDCDC;--on-surface:#1A1A1A;--on-surface-var:#5E6673;--on-surface-var70:rgba(94,102,115,0.70);--primary:#0696D7;--on-primary:#FFFFFF;--primary-tint:rgba(6,150,215,0.08);--secondary:#4A7FAF;--error:#C0392B;--error-bg:#FEF2F2;--success:#16A34A;--success-bg:#DCFCE7;--outline-variant:#CACACA;--border-subtle:rgba(0,0,0,0.08);--border-medium:rgba(0,0,0,0.15);--grad-ai:linear-gradient(135deg,#0696D7,#6C5CE7);--grad-progress:linear-gradient(90deg,#0696D7,#38B2E8);--grad-linked-bg:linear-gradient(135deg,rgba(6,150,215,0.12),rgba(108,92,231,0.12));--headline:'Hanken Grotesk',sans-serif;--body:'Hanken Grotesk',sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#E8EAED;font-family:var(--body);color:var(--on-surface);padding:40px;display:flex;flex-direction:column;gap:56px;align-items:flex-start}
+.window{width:1200px;background:var(--surface);border:1px solid #C8C8C8;border-radius:4px;box-shadow:0 8px 32px rgba(0,0,0,0.18);display:flex;flex-direction:column;overflow:hidden}
+.header{height:52px;display:flex;border-bottom:1px solid var(--border-subtle);flex-shrink:0}
+.header-brand{width:344px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border-subtle);background:var(--surface-lowest)}
+.brand-logo{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:18px;height:18px}
+.brand-logo span{display:block;border-radius:1px}
+.brand-title{font-family:var(--headline);font-size:16px;font-weight:600;line-height:1.1}
+.brand-sub{font-family:var(--mono);font-size:9px;color:var(--on-surface-var);font-weight:500;letter-spacing:.06em;margin-top:1px}
+.header-search{flex:1;display:flex;align-items:center;justify-content:center;padding:0 20px;border-right:1px solid var(--border-subtle)}
+.search-wrap{position:relative;width:100%;max-width:420px}
+.search-wrap input{width:100%;background:var(--surface-high);border:none;border-radius:6px;padding:7px 12px 7px 30px;font-family:var(--body);font-size:12px;color:var(--on-surface-var)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-surface-var)}
+.header-actions{width:352px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.icon-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border-subtle);background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--on-surface-var)}
+.icon-btn.disabled{background:var(--surface-high);color:var(--surface-highest)}
+.btn-group{display:flex;gap:6px}
+.body{flex:1;display:flex;min-height:0}
+.left-nav{width:64px;flex-shrink:0;background:var(--surface-lowest);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;align-items:center;padding-top:16px;gap:8px}
+.nav-btn{width:44px;height:44px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--on-surface-var)}
+.nav-btn.active{background:var(--primary-tint);color:var(--primary)}
+.nav-btn svg{width:18px;height:18px}
+.nav-label{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.05em}
+.explorer{width:280px;flex-shrink:0;background:var(--surface-lowest);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column}
+.panel-head{padding:16px;border-bottom:1px solid var(--border-subtle)}
+.panel-title{font-family:var(--headline);font-size:16px;font-weight:600}
+.panel-sub{font-size:11px;color:var(--on-surface-var);margin-top:2px}
+.tree{padding:8px;font-size:12px;font-weight:500}
+.tree-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;color:var(--on-surface-var);margin:1px 0;cursor:pointer}
+.tree-row.selected{background:var(--primary-tint);color:var(--primary)}
+.tree-children{margin-left:18px;border-left:1px solid var(--border-medium);padding-left:8px}
+.chev{width:14px;text-align:center;flex-shrink:0;font-size:10px}
+.filelist{flex:1;background:var(--surface);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;min-width:0}
+.filelist-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border-subtle);background:var(--surface-lowest);flex-shrink:0}
+.breadcrumb-pill{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--on-surface-var);background:var(--surface-high);border-radius:4px;padding:3px 10px}
+.refresh-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--border-subtle);border-radius:4px;padding:4px 10px;font-family:var(--body);font-size:11px;font-weight:600;color:var(--on-surface-var)}
+.grid-head{display:flex;align-items:center;height:34px;background:var(--surface-low);border-bottom:1px solid var(--border-subtle);flex-shrink:0}
+.col-check{width:44px;flex-shrink:0;display:flex;justify-content:center}
+.col-name{flex:1;min-width:0;display:flex;align-items:center;gap:7px;padding:0 14px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em}
+.col-ver{width:56px;flex-shrink:0;padding:0 14px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em}
+.col-size{width:76px;flex-shrink:0;padding:0 14px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em}
+.col-mod{width:96px;flex-shrink:0;padding:0 14px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em}
+.col-author{width:120px;flex-shrink:0;padding:0 14px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em}
+.col-action{width:40px;flex-shrink:0}
+.file-row{display:flex;align-items:center;height:34px;border-bottom:1px solid rgba(0,0,0,0.04);font-size:12px}
+.file-row .name{font-family:var(--mono);font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-row.selected{background:var(--primary-tint);color:var(--primary)}
+.file-row.linked{color:var(--on-surface-var);opacity:.65}
+.file-row .ver,.file-row .size,.file-row .mod{font-family:var(--mono);font-size:11px;color:var(--on-surface-var)}
+.file-row .auth{font-family:var(--body);font-size:11px;color:var(--on-surface-var)}
+.doc-ico{color:#10B981;flex-shrink:0}
+.pill-linked{background:var(--grad-linked-bg);border:1px solid rgba(6,150,215,0.25);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:9px;font-weight:700;color:#5B4FCC;flex-shrink:0}
+.checkbox{width:15px;height:15px;border:1.5px solid var(--outline-variant);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.checkbox.checked{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.checkbox.indeterminate{border-color:var(--primary)}
+.checkbox.indeterminate::after{content:"";width:7px;height:2px;background:var(--primary);display:block}
+.checkbox.disabled{opacity:.35}
+.filelist-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface-low);border-top:1px solid var(--border-subtle);flex-shrink:0;font-size:12px}
+.sel-count b{color:var(--primary);font-weight:700}
+.btn-primary{display:flex;align-items:center;gap:7px;background:var(--primary);color:var(--on-primary);border-radius:4px;padding:7px 18px;font-size:12px;font-weight:600;border:none;font-family:var(--body)}
+.queue{width:352px;flex-shrink:0;background:var(--surface-low);display:flex;flex-direction:column}
+.queue-head{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--border-subtle)}
+.queue-icon-chip{width:26px;height:26px;border-radius:6px;background:var(--grad-ai);display:flex;align-items:center;justify-content:center}
+.queue-badge{background:var(--surface-container);color:var(--on-surface-var);border-radius:4px;padding:2px 7px;font-family:var(--mono);font-size:10px;font-weight:700}
+.config{padding:14px;border-bottom:1px solid var(--border-subtle)}
+.config-title{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--on-surface-var);letter-spacing:.05em;margin-bottom:10px}
+.field-label{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--on-surface-var);margin-bottom:4px}
+.combo{display:flex;align-items:center;justify-content:space-between;background:var(--surface-high);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--on-surface);font-family:var(--body)}
+.field{margin-bottom:10px}
+.field-row{display:flex;gap:6px;align-items:center}
+.field-row .combo{flex:1}
+.btn-compact{background:var(--primary);color:var(--on-primary);border-radius:4px;padding:4px 10px;font-size:11px;font-weight:600;border:none;font-family:var(--body);flex-shrink:0}
+.row-between{display:flex;align-items:center;justify-content:space-between}
+.pill-toggle{display:flex;background:var(--surface-high);border-radius:6px;padding:2px}
+.pill-opt{font-family:var(--mono);font-size:9px;font-weight:700;padding:4px 10px;border-radius:4px;color:var(--on-surface-var)}
+.pill-opt.active{background:var(--primary);color:var(--on-primary)}
+.error-banner{margin:10px 14px 0;background:var(--error-bg);border:1px solid var(--error);border-radius:4px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start;font-family:var(--body);font-size:11px;line-height:1.5}
+.queue-cards{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:6px;padding:11px}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start}
+.card-id{display:flex;gap:6px;min-width:0;flex:1}
+.card-name{font-family:var(--mono);font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.card-path{font-size:10px;color:var(--on-surface-var70);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.card-status-row{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.status{font-family:var(--mono);font-size:9px;font-weight:700}
+.status.linked{color:var(--primary)}.status.linking{color:var(--secondary)}.status.failed{color:var(--error)}.status.pending{color:var(--on-surface-var)}
+.card-combo{margin-top:7px}
+.card-combo .combo{font-size:10px;padding:5px 10px}
+.bar{height:3px;background:var(--surface-highest);border-radius:2px;margin-top:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.card-error{margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--error);line-height:1.5}
+.queue-foot{padding:14px;background:var(--surface-container);border-top:1px solid var(--border-subtle)}
+.progress-row{display:flex;align-items:center;margin-bottom:6px;font-family:var(--mono);font-size:10px;font-weight:500}
+.progress-row .label{color:var(--on-surface-var)}
+.progress-row .value{margin-left:auto;color:var(--primary)}
+.bar-overall{height:3px;background:var(--surface-highest);border-radius:2px;margin-bottom:12px;overflow:hidden}
+.btn-start{width:100%;background:var(--primary);color:var(--on-primary);border:none;border-radius:4px;padding:11px 14px;font-size:13px;font-weight:600;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:8px}
+.linklist{flex:1;background:var(--surface);display:flex;flex-direction:column}
+.linklist-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border-subtle);background:var(--surface-lowest);flex-shrink:0}
+.ll-title{display:flex;align-items:center;gap:8px;font-family:var(--headline);font-size:16px;font-weight:600}
+.ll-count{background:var(--primary-tint);color:var(--primary);font-family:var(--mono);font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px}
+.btn-secondary{display:flex;align-items:center;gap:6px;background:var(--surface-high);border:1px solid var(--border-subtle);border-radius:4px;padding:6px 14px;font-family:var(--body);font-size:12px;font-weight:600;color:var(--on-surface)}
+.ll-row{display:flex;align-items:center;height:44px;border-bottom:1px solid rgba(0,0,0,0.04)}
+.status-badge{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px}
+.status-badge.loaded{color:var(--success);background:var(--success-bg);border:1px solid var(--success)}
+.status-badge.unloaded{color:var(--on-surface-var);border:1px solid var(--outline-variant)}
+.status-badge.notfound{color:var(--error);background:var(--error-bg);border:1px solid var(--error)}
+.dialog-wrap{width:600px;background:var(--surface);border:1px solid var(--border-subtle);border-radius:6px;box-shadow:0 16px 48px rgba(0,0,0,0.18);overflow:hidden}
+.dialog-header{background:var(--on-surface);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px}
+.dialog-header span{font-family:var(--headline);font-size:15px;font-weight:600}
+.dialog-body{padding:20px}
+.current-file{display:flex;align-items:center;gap:8px;background:var(--surface-low);border:1px solid var(--border-subtle);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-family:var(--mono);font-size:12px;font-weight:500}
+.log-panel{background:#1A1A1A;color:#E2E2E8;border-radius:4px;padding:12px 14px;font-family:var(--mono);font-size:11px;height:160px;overflow:hidden;line-height:1.7}
+.log-ok{color:#4EDEA3}.log-err{color:#FFB4AB}
+.dialog-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface-low);border-top:1px solid var(--border-subtle)}
+.btn-cancel-red{background:var(--error);color:#fff;border:none;border-radius:4px;padding:7px 20px;font-size:12px;font-weight:600;font-family:var(--body)}
+.toast{width:360px;background:var(--error-bg);border:1px solid var(--error);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.14);padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+.toast-icon{width:22px;height:22px;background:var(--error);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast-title{font-family:var(--headline);font-size:13px;font-weight:600;margin-bottom:2px}
+.toast-msg{font-family:var(--body);font-size:12px;line-height:1.5}
+.tokens{width:1200px;background:var(--surface);border:1px solid #C8C8C8;border-radius:4px;padding:32px}
+.tokens h2{font-family:var(--headline);font-size:18px;font-weight:600;margin-bottom:16px}
+.swatch-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px}
+.swatch{width:160px;border:1px solid var(--border-medium);border-radius:6px;overflow:hidden}
+.swatch .chip{height:48px}
+.swatch .meta{padding:7px 10px;background:var(--surface-low)}
+.swatch .nm{font-family:var(--mono);font-size:9px;font-weight:700}
+.swatch .hx{font-family:var(--mono);font-size:9px;color:var(--on-surface-var);margin-top:1px}
+.type-row{display:flex;gap:32px;align-items:baseline;margin-bottom:10px}
+.type-spec{font-family:var(--mono);font-size:10px;color:var(--on-surface-var);width:320px;flex-shrink:0}
+svg{vertical-align:middle;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ARTBOARD 1: BATCH VIEW -->
+<section class="window" style="height:760px">
+  <div class="header">
+    <div class="header-brand">
+      <div class="brand-logo">
+        <span style="background:var(--primary)"></span><span style="background:var(--primary);opacity:.5"></span>
+        <span style="background:var(--primary);opacity:.5"></span><span style="background:var(--primary);opacity:.25"></span>
+      </div>
+      <div><div class="brand-title">BIM Link Manager</div><div class="brand-sub">BY ZHEQUAN ZHANG</div></div>
+    </div>
+    <div class="header-search">
+      <div class="search-wrap">
+        <span class="search-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg></span>
+        <input placeholder="Search files…" style="outline:none">
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="btn-group">
+        <div class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 1.5v3h-3"/></svg></div>
+        <div class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2v4M4 10v2H2v2h4v-2M14 10v2h-2v2H8v-4M8 6l-4 4M8 6l4 4"/></svg></div>
+      </div>
+      <div class="btn-group">
+        <div class="icon-btn disabled"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.5a5 5 0 0 1 5 5v3l1.5 2h-13L3 9.5v-3a5 5 0 0 1 5-5zM6 13.5a2 2 0 0 0 4 0"/></svg></div>
+        <div class="icon-btn disabled"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="left-nav">
+      <div class="nav-btn active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="nav-label">BATCH</span>
+      </div>
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span class="nav-label">LINKS</span>
+      </div>
+    </nav>
+    <aside class="explorer">
+      <div class="panel-head"><div class="panel-title">Project Explorer</div><div class="panel-sub">Sample Project — ICT</div></div>
+      <div class="tree">
+        <div class="tree-row"><span class="chev">▾</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> Project Files</div>
+        <div class="tree-children">
+          <div class="tree-row"><span class="chev">▸</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> 01 WIP</div>
+          <div class="tree-row"><span class="chev">▾</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> 02 Shared</div>
+          <div class="tree-children">
+            <div class="tree-row"><span class="chev">▸</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> ARC</div>
+            <div class="tree-row"><span class="chev">▸</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> STR</div>
+            <div class="tree-row selected"><span class="chev">▾</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> ICT</div>
+            <div class="tree-row"><span class="chev">▸</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> MEP</div>
+          </div>
+          <div class="tree-row"><span class="chev">▸</span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5v8h13v-6.5H8L6.5 4.5z"/></svg> 03 Published</div>
+        </div>
+      </div>
+    </aside>
+    <main class="filelist">
+      <div class="filelist-toolbar">
+        <div class="breadcrumb-pill">/ Project Files / 02 Shared / ICT /</div>
+        <div class="refresh-btn"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 1.5v3h-3"/></svg> Refresh</div>
+      </div>
+      <div class="grid-head">
+        <div class="col-check"><div class="checkbox indeterminate"></div></div>
+        <div class="col-name">MODEL NAME ▲</div>
+        <div class="col-ver">VER</div><div class="col-size">SIZE</div><div class="col-mod">MODIFIED</div><div class="col-author">AUTHOR</div><div class="col-action"></div>
+      </div>
+      <div class="file-row selected"><div class="col-check"><div class="checkbox checked"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 5l3 3 5-6"/></svg></div></div><div class="col-name"><svg class="doc-ico" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><span class="name">PRJ-ICT-CMP-A-COM-R26.rvt</span></div><div class="col-ver ver">v12</div><div class="col-size size">86 MB</div><div class="col-mod mod">2h ago</div><div class="col-author auth">Quan Zhang</div><div class="col-action"></div></div>
+      <div class="file-row selected"><div class="col-check"><div class="checkbox checked"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 5l3 3 5-6"/></svg></div></div><div class="col-name"><svg class="doc-ico" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><span class="name">PRJ-ICT-SEC-B-CCTV-R26.rvt</span></div><div class="col-ver ver">v8</div><div class="col-size size">124 MB</div><div class="col-mod mod">5h ago</div><div class="col-author auth">A. Carter</div><div class="col-action"></div></div>
+      <div class="file-row linked"><div class="col-check"><div class="checkbox disabled"></div></div><div class="col-name"><svg class="doc-ico" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><span class="name">PRJ-ICT-CAB-A-ROUTES-R26.rvt</span><span class="pill-linked">LINKED</span></div><div class="col-ver ver">v17</div><div class="col-size size">210 MB</div><div class="col-mod mod">3d ago</div><div class="col-author auth">Quan Zhang</div><div class="col-action"></div></div>
+      <div class="file-row"><div class="col-check"><div class="checkbox"></div></div><div class="col-name"><svg class="doc-ico" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><span class="name">PRJ-ICT-RAD-C-DAS-R26.rvt</span></div><div class="col-ver ver">v4</div><div class="col-size size">38 MB</div><div class="col-mod mod">4d ago</div><div class="col-author auth">M. Reyes</div><div class="col-action"></div></div>
+      <div class="filelist-foot"><div class="sel-count"><b>2</b> Models Selected</div><div class="btn-primary">Add to Queue <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 8h11M9 3.5 13.5 8 9 12.5"/></svg></div></div>
+    </main>
+    <aside class="queue">
+      <div class="queue-head"><div style="display:flex;align-items:center;gap:8px"><div class="queue-icon-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div><span style="font-family:var(--headline);font-size:16px;font-weight:600">Import Queue</span></div><div class="queue-badge">2</div></div>
+      <div class="config">
+        <div class="config-title"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="var(--primary)" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg> GLOBAL CONFIGURATION</div>
+        <div class="field"><div class="field-label">DEFAULT WORKSET</div><div class="field-row"><div class="combo"><span>Z-LINK-ICT</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div><div class="btn-compact">Apply All</div></div></div>
+        <div class="field"><div class="field-label">POSITIONING SYSTEM</div><div class="combo"><span>Auto — Internal Origin to Internal Origin</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div>
+        <div class="row-between"><div class="field-label" style="margin:0">REFERENCE TYPE</div><div class="pill-toggle"><div class="pill-opt active">OVERLAY</div><div class="pill-opt">ATTACHMENT</div></div></div>
+      </div>
+      <div class="error-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="1.5" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Incompatible coordinate systems detected. Group similar models for efficient batching.</div>
+      <div class="queue-cards">
+        <div class="card"><div class="card-top"><div class="card-id"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="var(--on-surface-var)" stroke-width="1.3" style="margin-top:1px"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><div><div class="card-name">PRJ-ICT-CMP-A-COM-R26.RVT</div><div class="card-path">Project Files / 02 Shared / ICT</div></div></div><div class="card-status-row"><span class="status linked">LINKED</span><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--on-surface-var)" stroke-width="1.5" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></div></div><div class="card-combo"><div class="combo"><span>Z-LINK-ICT</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div><div class="bar"><div class="bar-fill" style="width:100%;background:var(--primary)"></div></div></div>
+        <div class="card"><div class="card-top"><div class="card-id"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="var(--on-surface-var)" stroke-width="1.3" style="margin-top:1px"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><div><div class="card-name">PRJ-ICT-SEC-B-CCTV-R26.RVT</div><div class="card-path">Project Files / 02 Shared / ICT</div></div></div><div class="card-status-row"><span class="status failed">FAILED</span><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--on-surface-var)" stroke-width="1.5" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></div></div><div class="card-combo"><div class="combo"><span>Z-LINK-ICT</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div><div class="bar"><div class="bar-fill" style="width:100%;background:var(--error)"></div></div><div class="card-error">RevitLinkType.Create: InvalidOperationException: The model is not the latest version.</div></div>
+      </div>
+      <div class="queue-foot"><div class="progress-row"><span class="label">Overall Progress</span><span class="value">1 / 2 Complete</span></div><div class="bar-overall"><div class="bar-fill" style="width:50%;background:var(--grad-progress)"></div></div><div class="btn-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Start Batch Link</div></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ARTBOARD 2: LINKS VIEW -->
+<section class="window" style="height:500px">
+  <div class="header">
+    <div class="header-brand"><div class="brand-logo"><span style="background:var(--primary)"></span><span style="background:var(--primary);opacity:.5"></span><span style="background:var(--primary);opacity:.5"></span><span style="background:var(--primary);opacity:.25"></span></div><div><div class="brand-title">BIM Link Manager</div><div class="brand-sub">BY ZHEQUAN ZHANG</div></div></div>
+    <div class="header-search"><div class="search-wrap"><span class="search-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg></span><input placeholder="Search files…" style="outline:none"></div></div>
+    <div class="header-actions"><div class="btn-group"><div class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 1.5v3h-3"/></svg></div></div><div class="btn-group"><div class="icon-btn disabled"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.5a5 5 0 0 1 5 5v3l1.5 2h-13L3 9.5v-3a5 5 0 0 1 5-5zM6 13.5a2 2 0 0 0 4 0"/></svg></div><div class="icon-btn disabled"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg></div></div></div>
+  </div>
+  <div class="body">
+    <nav class="left-nav">
+      <div class="nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-label">BATCH</span></div>
+      <div class="nav-btn active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="nav-label">LINKS</span></div>
+    </nav>
+    <div class="linklist">
+      <div class="linklist-toolbar">
+        <div class="ll-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--on-surface-var)" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Project Links <span class="ll-count">4</span></div>
+        <div style="display:flex;gap:8px"><div class="btn-secondary"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 1.5v3h-3"/></svg> Reload All</div><div class="btn-primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Manage Links</div></div>
+      </div>
+      <div style="display:flex;height:34px;background:var(--surface-low);border-bottom:1px solid var(--border-subtle)">
+        <div style="flex:1;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em;display:flex;align-items:center">MODEL NAME</div>
+        <div style="width:140px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em;display:flex;align-items:center">STATUS</div>
+        <div style="width:160px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em;display:flex;align-items:center">PATH TYPE</div>
+        <div style="width:220px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em;display:flex;align-items:center">WORKSET</div>
+      </div>
+      <div class="ll-row"><div style="flex:1;padding:0 16px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#10B981" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg>PRJ-ARC-TERMINAL-A.rvt</div><div style="width:140px;flex-shrink:0;padding:0 16px;display:flex;align-items:center"><span class="status-badge loaded">LOADED</span></div><div style="width:160px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:12px;color:var(--on-surface-var)">Cloud (ACC)</div><div style="width:220px;flex-shrink:0;padding:0 16px"><div class="combo"><span>Architecture Link</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div></div>
+      <div class="ll-row"><div style="flex:1;padding:0 16px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#10B981" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg>PRJ-STR-FOUNDATION.rvt</div><div style="width:140px;flex-shrink:0;padding:0 16px;display:flex;align-items:center"><span class="status-badge loaded">LOADED</span></div><div style="width:160px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:12px;color:var(--on-surface-var)">Relative</div><div style="width:220px;flex-shrink:0;padding:0 16px"><div class="combo"><span>Structural Link</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div></div>
+      <div class="ll-row"><div style="flex:1;padding:0 16px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#10B981" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg>PRJ-MEP-HVAC-T1.rvt</div><div style="width:140px;flex-shrink:0;padding:0 16px;display:flex;align-items:center"><span class="status-badge unloaded">UNLOADED</span></div><div style="width:160px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:12px;color:var(--on-surface-var)">Cloud (ACC)</div><div style="width:220px;flex-shrink:0;padding:0 16px"><div class="combo"><span>MEP Link</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div></div>
+      <div class="ll-row"><div style="flex:1;padding:0 16px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#10B981" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg>PRJ-ICT-ELV-CORE-R26.rvt</div><div style="width:140px;flex-shrink:0;padding:0 16px;display:flex;align-items:center"><span class="status-badge notfound">NOT FOUND</span></div><div style="width:160px;flex-shrink:0;padding:0 16px;font-family:var(--mono);font-size:12px;color:var(--on-surface-var)">Absolute</div><div style="width:220px;flex-shrink:0;padding:0 16px"><div class="combo"><span>Z-LINK-ICT</span><svg width="11" height="6" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0 0l8 8 8-8"/></svg></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ARTBOARD 3: PROGRESS DIALOG -->
+<section><div class="dialog-wrap">
+  <div class="dialog-header"><span>Importing Models…</span><span class="pct">45%</span></div>
+  <div class="dialog-body">
+    <div class="current-file"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#10B981" stroke-width="1.3"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg><span style="flex:1">PRJ-ICT-SEC-B-CCTV-R26.rvt</span><span style="color:var(--on-surface-var)">45%</span></div>
+    <div style="height:6px;background:var(--surface-high);border-radius:3px;margin-bottom:8px;overflow:hidden"><div style="height:100%;width:45%;background:var(--grad-progress);border-radius:3px"></div></div>
+    <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em;margin-bottom:14px"><span><span style="color:var(--success)">1 SUCCEEDED</span> · <span>1 PENDING</span></span><span>1 / 2 Complete</span></div>
+    <div class="log-panel">
+      <div>&gt; initialising Revit bridge…</div>
+      <div>&gt; ACC connection established</div>
+      <div>&gt; linking PRJ-ICT-CMP-A-COM-R26.rvt</div>
+      <div class="log-ok">&gt; [OK] PRJ-ICT-CMP-A-COM-R26.rvt — Linked.</div>
+      <div>&gt; linking PRJ-ICT-SEC-B-CCTV-R26.rvt</div>
+      <div>&gt; PRJ-ICT-SEC-B-CCTV-R26.rvt (45%)</div>
+    </div>
+  </div>
+  <div class="dialog-foot"><span style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--on-surface-var);letter-spacing:.05em">LINKING MODEL 1 / 2</span><div class="btn-cancel-red">Cancel Import</div></div>
+</div></section>
+
+<!-- ARTBOARD 4: ERROR TOAST -->
+<section><div class="toast">
+  <div class="toast-icon"><span style="color:#fff;font-size:13px;font-weight:800;line-height:1">!</span></div>
+  <div style="flex:1"><div class="toast-title">Heads up</div><div class="toast-msg">One or more models failed to link. Check the import log for details.</div></div>
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--on-surface-var)" stroke-width="1.5" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+</div></section>
+
+<!-- ARTBOARD 5: DESIGN TOKENS -->
+<section class="tokens">
+  <h2>Color Tokens — BIM Link Manager Design Language v1.0</h2>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#FFFFFF;border-bottom:1px solid #eee"></div><div class="meta"><div class="nm">Surface</div><div class="hx">#FFFFFF</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F4F5F6"></div><div class="meta"><div class="nm">SurfaceLowest</div><div class="hx">#F4F5F6</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F9FAFB"></div><div class="meta"><div class="nm">SurfaceLow</div><div class="hx">#F9FAFB</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#EFEFEF"></div><div class="meta"><div class="nm">SurfaceContainer</div><div class="hx">#EFEFEF</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#E8E8E8"></div><div class="meta"><div class="nm">SurfaceHigh</div><div class="hx">#E8E8E8</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#DCDCDC"></div><div class="meta"><div class="nm">SurfaceHighest</div><div class="hx">#DCDCDC</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#1A1A1A"></div><div class="meta"><div class="nm">OnSurface</div><div class="hx">#1A1A1A</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#5E6673"></div><div class="meta"><div class="nm">OnSurfaceVariant</div><div class="hx">#5E6673</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#0696D7"></div><div class="meta"><div class="nm">Primary</div><div class="hx">#0696D7</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#C0392B"></div><div class="meta"><div class="nm">Error</div><div class="hx">#C0392B</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#16A34A"></div><div class="meta"><div class="nm">Success</div><div class="hx">#16A34A</div></div></div>
+    <div class="swatch"><div class="chip" style="background:linear-gradient(135deg,#0696D7,#6C5CE7)"></div><div class="meta"><div class="nm">GradientAI</div><div class="hx">#0696D7 → #6C5CE7</div></div></div>
+    <div class="swatch"><div class="chip" style="background:linear-gradient(90deg,#0696D7,#38B2E8)"></div><div class="meta"><div class="nm">GradientProgress</div><div class="hx">#0696D7 → #38B2E8</div></div></div>
+  </div>
+  <h2>Typography</h2>
+  <div class="type-row"><div class="type-spec">HeadlineLg — Hanken Grotesk SemiBold 18–22px</div><div style="font-family:var(--headline);font-size:20px;font-weight:600">BIM Link Manager</div></div>
+  <div class="type-row"><div class="type-spec">HeadlineMd — Hanken Grotesk SemiBold 16px</div><div style="font-family:var(--headline);font-size:16px;font-weight:600">Import Queue</div></div>
+  <div class="type-row"><div class="type-spec">BodySm — Hanken Grotesk Regular 12px</div><div style="font-size:12px">Add to Queue · 2 Models Selected</div></div>
+  <div class="type-row"><div class="type-spec">LabelMd — JetBrains Mono Medium 12px</div><div style="font-family:var(--mono);font-size:12px;font-weight:500">BY ZHEQUAN ZHANG</div></div>
+  <div class="type-row"><div class="type-spec">LabelSm — JetBrains Mono Medium 10px</div><div style="font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.05em">MODEL NAME · DEFAULT WORKSET · GLOBAL CONFIGURATION</div></div>
+  <div class="type-row"><div class="type-spec">Tag — JetBrains Mono Bold 9px</div><div style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--primary)">LINKED · OVERLAY · PENDING · LOADED</div></div>
+</section>
+
+</body>
+</html>

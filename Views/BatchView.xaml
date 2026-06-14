@@ -1,0 +1,733 @@
+<UserControl x:Class="BimLinkManager.Views.BatchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BimLinkManager.Views"
+             xmlns:models="clr-namespace:BimLinkManager.Models"
+             Background="#FFFFFF"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/BimLinkManager;component/Resources/BlmTheme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/BimLinkManager;component/Resources/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="ScrollBarHost" TargetType="ScrollBar" BasedOn="{StaticResource BlmScrollBarV}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" MinWidth="240"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition Width="*" MinWidth="480"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition Width="352" MinWidth="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ============================================================
+             PANE 1 — PROJECT EXPLORER
+             ============================================================ -->
+        <Border Grid.Column="0"
+                Background="{StaticResource SurfaceLowestBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="0,0,1,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Project Explorer" Style="{StaticResource HeadlineMd}"/>
+                        <TextBlock x:Name="ExplorerSubtitle"
+                                   Style="{StaticResource BodyXs}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="0,2,0,0"
+                                   Text=""/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Background="Transparent">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource ScrollBarHost}"/>
+                    </ScrollViewer.Resources>
+                    <ItemsControl x:Name="FolderTree"
+                                  Margin="8"
+                                  Background="Transparent"
+                                  Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:AccFolder}">
+                                <local:FolderNodeControl Folder="{Binding}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="1" Style="{StaticResource BlmSplitter}"/>
+
+        <!-- ============================================================
+             PANE 2 — FILE TABLE
+             ============================================================ -->
+        <Border Grid.Column="2"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="0,0,1,0">
+            <DockPanel>
+                <!-- Toolbar: breadcrumb pill + ghost refresh -->
+                <Border DockPanel.Dock="Top"
+                        Background="{StaticResource SurfaceLowestBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="14,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Background="{StaticResource SurfaceHighBrush}"
+                                CornerRadius="4"
+                                Padding="10,3"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                            <TextBlock x:Name="FolderBreadcrumb"
+                                       FontFamily="{StaticResource FontMono}"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Text="/"/>
+                        </Border>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource BtnGhost}"
+                                Click="RefreshFolderBtn_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource IconStroke}"
+                                      Data="{StaticResource IconRefresh}"
+                                      StrokeThickness="1.4"
+                                      Width="12" Height="12"
+                                      Margin="0,0,5,0"/>
+                                <TextBlock Text="Refresh" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Footer: selection count + Add to Queue -->
+                <Border DockPanel.Dock="Bottom"
+                        Background="{StaticResource SurfaceLowBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="14,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="SelectedCountText"
+                                       FontFamily="{StaticResource FontBody}"
+                                       FontWeight="Bold"
+                                       FontSize="12"
+                                       Foreground="{StaticResource PrimaryBrush}"
+                                       Text="0"/>
+                            <TextBlock Text=" Models Selected" Style="{StaticResource BodySm}"/>
+                        </StackPanel>
+                        <Button x:Name="AddToQueueBtn"
+                                Grid.Column="1"
+                                Style="{StaticResource BtnPrimary}"
+                                Click="AddToQueueBtn_Click"
+                                IsEnabled="False">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Add to Queue" VerticalAlignment="Center"/>
+                                <Path Style="{StaticResource IconStroke}"
+                                      Data="{StaticResource IconArrowRight}"
+                                      StrokeThickness="1.6"
+                                      Width="13" Height="13"
+                                      Margin="7,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Grid header -->
+                <Border DockPanel.Dock="Top"
+                        Height="34"
+                        Background="{StaticResource SurfaceLowBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                            <ColumnDefinition Width="76"/>
+                            <ColumnDefinition Width="96"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox x:Name="HeaderCheckAll"
+                                  Grid.Column="0"
+                                  Style="{StaticResource CheckBlm}"
+                                  Click="HeaderCheckAll_Click"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0">
+                            <TextBlock Text="MODEL NAME"
+                                       Style="{StaticResource LabelSm}"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            <Path Data="{StaticResource IconSortAsc}"
+                                  Fill="{StaticResource OnSurfaceVariantBrush}"
+                                  Stretch="Uniform"
+                                  Width="7" Height="5"
+                                  Margin="6,0,0,0"
+                                  VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="VER" Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Center" Margin="14,0"/>
+                        <TextBlock Grid.Column="3" Text="SIZE" Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Center" Margin="14,0"/>
+                        <TextBlock Grid.Column="4" Text="MODIFIED" Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Center" Margin="14,0"/>
+                        <TextBlock Grid.Column="5" Text="AUTHOR" Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Center" Margin="14,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Table body -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource ScrollBarHost}"/>
+                    </ScrollViewer.Resources>
+                    <StackPanel>
+                        <ItemsControl x:Name="FileList" Background="Transparent" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Height="34"
+                                            BorderBrush="{StaticResource RowDividerBrush}"
+                                            BorderThickness="0,0,0,1"
+                                            SnapsToDevicePixels="True">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource SurfaceLowBrush}"/>
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource PrimaryTintBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsAlreadyLinked}" Value="True">
+                                                        <Setter Property="Opacity" Value="0.65"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="44"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="56"/>
+                                                <ColumnDefinition Width="76"/>
+                                                <ColumnDefinition Width="96"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="40"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <CheckBox Grid.Column="0"
+                                                      Style="{StaticResource CheckBlm}"
+                                                      IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      IsEnabled="{Binding IsAlreadyLinked, Converter={x:Static local:BoolInverter.Instance}}"
+                                                      Click="RowCheck_Click"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+
+                                            <Grid Grid.Column="1" Margin="14,0" VerticalAlignment="Center">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Path Style="{StaticResource IconStroke}"
+                                                      Data="{StaticResource IconDescription}"
+                                                      Stroke="{StaticResource DocIconBrush}"
+                                                      StrokeThickness="1.3"
+                                                      Width="12" Height="12"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding File.DisplayName}"
+                                                           FontFamily="{StaticResource FontMono}"
+                                                           FontWeight="Medium"
+                                                           FontSize="11"
+                                                           Margin="7,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsAlreadyLinked}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <Border Grid.Column="2"
+                                                        Style="{StaticResource LinkedPill}"
+                                                        Margin="7,0,0,0"
+                                                        Visibility="{Binding IsAlreadyLinked, Converter={x:Static local:BoolToVisibilityConverter.Instance}}">
+                                                    <TextBlock Text="LINKED"
+                                                               Style="{StaticResource Tag}"
+                                                               Foreground="{StaticResource LinkedPillFgBrush}"/>
+                                                </Border>
+                                            </Grid>
+
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding File.VersionDisplay}"
+                                                       FontFamily="{StaticResource FontMono}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                       VerticalAlignment="Center" Margin="14,0"/>
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding File.SizeDisplay}"
+                                                       FontFamily="{StaticResource FontMono}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                       VerticalAlignment="Center" Margin="14,0"/>
+                                            <TextBlock Grid.Column="4"
+                                                       Text="{Binding File.ModifiedRelativeDisplay}"
+                                                       ToolTip="{Binding File.ModifiedDisplay}"
+                                                       FontFamily="{StaticResource FontMono}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                       VerticalAlignment="Center" Margin="14,0"/>
+                                            <TextBlock Grid.Column="5"
+                                                       Text="{Binding File.ModifiedBy}"
+                                                       FontFamily="{StaticResource FontBody}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center" Margin="14,0"/>
+
+                                            <Button Grid.Column="6"
+                                                    Click="QueueOneBtn_Click"
+                                                    Tag="{Binding}"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Add to queue">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource BtnIconFlat}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsAlreadyLinked}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <Path Style="{StaticResource IconStroke}"
+                                                      Data="{StaticResource IconPlus}"
+                                                      Width="13" Height="13"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty state -->
+                        <TextBlock x:Name="EmptyHint"
+                                   Text="Select a folder to list .rvt models."
+                                   Style="{StaticResource BodySm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,48,0,48"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="3" Style="{StaticResource BlmSplitter}"/>
+
+        <!-- ============================================================
+             PANE 3 — IMPORT QUEUE
+             ============================================================ -->
+        <Border Grid.Column="4" Background="{StaticResource SurfaceLowBrush}">
+            <DockPanel>
+
+                <!-- Head -->
+                <Border DockPanel.Dock="Top"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Width="26" Height="26"
+                                    CornerRadius="6"
+                                    Background="{StaticResource GradAI}">
+                                <Path Style="{StaticResource IconStroke}"
+                                      Data="{StaticResource IconQueueRows}"
+                                      Stroke="White"
+                                      Width="14" Height="14"
+                                      HorizontalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Import Queue"
+                                       Style="{StaticResource HeadlineMd}"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource CountBadge}">
+                            <TextBlock x:Name="QueueCountText"
+                                       Style="{StaticResource CountBadgeText}"
+                                       Text="0"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Global configuration -->
+                <Border DockPanel.Dock="Top"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="14">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Path Style="{StaticResource IconStroke}"
+                                  Data="{StaticResource IconSettings}"
+                                  Stroke="{StaticResource PrimaryBrush}"
+                                  StrokeThickness="1.3"
+                                  Width="11" Height="11"/>
+                            <TextBlock Text="GLOBAL CONFIGURATION"
+                                       Style="{StaticResource LabelSm}"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       Margin="6,0,0,0"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Text="DEFAULT WORKSET"
+                                   Style="{StaticResource LabelSm}"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="GlobalWorkset"
+                                      Style="{StaticResource ComboFlat}"
+                                      IsEditable="True"
+                                      ItemsSource="{Binding DataContext.WorksetNames, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            <Button x:Name="ApplyAllBtn"
+                                    Grid.Column="1"
+                                    Style="{StaticResource BtnCompact}"
+                                    Content="Apply All"
+                                    Click="ApplyAllBtn_Click"
+                                    Margin="6,0,0,0"/>
+                        </Grid>
+
+                        <TextBlock Text="POSITIONING SYSTEM"
+                                   Style="{StaticResource LabelSm}"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Margin="0,0,0,4"/>
+                        <ComboBox x:Name="GlobalPositioning"
+                                  Style="{StaticResource ComboFlat}"
+                                  SelectionChanged="GlobalPositioning_SelectionChanged"
+                                  Margin="0,0,0,10"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="REFERENCE TYPE"
+                                       Style="{StaticResource LabelSm}"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource SurfaceHighBrush}"
+                                    CornerRadius="6"
+                                    Padding="2">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="RefOverlay"
+                                                 Style="{StaticResource PillToggle}"
+                                                 GroupName="RefType"
+                                                 Content="OVERLAY"
+                                                 IsChecked="True"
+                                                 Checked="GlobalReferenceType_Checked"/>
+                                    <RadioButton x:Name="RefAttachment"
+                                                 Style="{StaticResource PillToggle}"
+                                                 GroupName="RefType"
+                                                 Content="ATTACHMENT"
+                                                 Checked="GlobalReferenceType_Checked"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Queue foot -->
+                <Border DockPanel.Dock="Bottom"
+                        Background="{StaticResource SurfaceContainerBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="14">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Overall Progress"
+                                       Style="{StaticResource LabelSm}"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            <TextBlock x:Name="OverallProgressLabel"
+                                       Grid.Column="1"
+                                       Style="{StaticResource LabelSm}"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource PrimaryBrush}"
+                                       Text="0 / 0 Complete"/>
+                        </Grid>
+                        <Border Height="3"
+                                Background="{StaticResource SurfaceHighestBrush}"
+                                CornerRadius="2"
+                                Margin="0,6,0,12"
+                                ClipToBounds="True">
+                            <Border Background="{StaticResource GradProgress}"
+                                    CornerRadius="2"
+                                    HorizontalAlignment="Stretch"
+                                    RenderTransformOrigin="0,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="OverallBarScale" ScaleX="0"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Border>
+                        <Button x:Name="StartBatchBtn"
+                                Style="{StaticResource BtnStart}"
+                                Click="StartBatchBtn_Click"
+                                IsEnabled="False">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconPlay}"
+                                      Fill="{Binding RelativeSource={RelativeSource Self}, Path=(TextElement.Foreground)}"
+                                      Stretch="Uniform"
+                                      Width="13" Height="13"
+                                      Margin="0,0,8,0"
+                                      VerticalAlignment="Center"/>
+                                <TextBlock Text="Start Batch Link" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Error banner -->
+                <Border x:Name="ErrorBanner"
+                        DockPanel.Dock="Top"
+                        Background="{StaticResource ErrorBgBrush}"
+                        BorderBrush="{StaticResource ErrorBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Margin="14,10,14,0"
+                        Padding="10,8"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Grid.Column="0"
+                              Style="{StaticResource IconStroke}"
+                              Data="{StaticResource IconWarning}"
+                              Stroke="{StaticResource ErrorBrush}"
+                              Width="14" Height="14"
+                              VerticalAlignment="Top"
+                              Margin="0,1,8,0"/>
+                        <TextBlock x:Name="ErrorBannerText"
+                                   Grid.Column="1"
+                                   Style="{StaticResource BodyXs}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   Text="Incompatible coordinate systems detected. Group similar models for efficient batching."/>
+                        <Button Grid.Column="2"
+                                Style="{StaticResource BtnIconFlat}"
+                                Click="DismissErrorBanner_Click"
+                                VerticalAlignment="Top"
+                                Padding="2"
+                                Margin="6,0,0,0">
+                            <Path Style="{StaticResource IconStroke}"
+                                  Data="{StaticResource IconClose}"
+                                  Width="10" Height="10"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Queue cards -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource ScrollBarHost}"/>
+                    </ScrollViewer.Resources>
+                    <ItemsControl x:Name="QueueList" Margin="14,12" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:LinkTask}">
+                                <Border Background="{StaticResource SurfaceBrush}"
+                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="11"
+                                        Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <!-- Top row: doc glyph + name/path | status + close -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Path Style="{StaticResource IconStroke}"
+                                                  Data="{StaticResource IconDescription}"
+                                                  StrokeThickness="1.3"
+                                                  Stroke="{StaticResource OnSurfaceVariantBrush}"
+                                                  Width="11" Height="11"
+                                                  VerticalAlignment="Top"
+                                                  Margin="0,1,6,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Style="{StaticResource CardName}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Configuration.FolderPathDisplay}"
+                                                           FontFamily="{StaticResource FontBody}"
+                                                           FontSize="10"
+                                                           Foreground="{StaticResource OnSurfaceVariant70Brush}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding StatusDisplay}"
+                                                       VerticalAlignment="Top"
+                                                       Margin="6,2,6,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Tag}">
+                                                        <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Succeeded">
+                                                                <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Running">
+                                                                <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Button Grid.Column="3"
+                                                    Style="{StaticResource BtnIconFlat}"
+                                                    Click="RemoveFromQueueBtn_Click"
+                                                    Tag="{Binding}"
+                                                    Padding="2"
+                                                    VerticalAlignment="Top"
+                                                    ToolTip="Remove from queue">
+                                                <Path Style="{StaticResource IconStroke}"
+                                                      Data="{StaticResource IconClose}"
+                                                      Width="10" Height="10"/>
+                                            </Button>
+                                        </Grid>
+
+                                        <!-- Workset -->
+                                        <ComboBox Style="{StaticResource ComboFlat}"
+                                                  FontSize="10"
+                                                  IsEditable="True"
+                                                  Margin="0,7,0,0"
+                                                  Text="{Binding Configuration.WorksetName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                  ItemsSource="{Binding DataContext.WorksetNames, RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+                                        <!-- Progress (hidden while Pending) -->
+                                        <Border Height="3"
+                                                Background="{StaticResource SurfaceHighestBrush}"
+                                                CornerRadius="2"
+                                                Margin="0,7,0,0"
+                                                ClipToBounds="True">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Border CornerRadius="2"
+                                                    HorizontalAlignment="Stretch"
+                                                    RenderTransformOrigin="0,0.5">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding ProgressPercent, Converter={x:Static local:PercentToScaleConverter.Instance}}"/>
+                                                </Border.RenderTransform>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{StaticResource GradProgress}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Succeeded">
+                                                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                        </Border>
+
+                                        <!-- Error line (Failed only) -->
+                                        <TextBlock Text="{Binding StatusMessage}"
+                                                   FontFamily="{StaticResource FontMono}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ErrorBrush}"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="15"
+                                                   Margin="0,5,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

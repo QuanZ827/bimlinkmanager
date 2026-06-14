@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIM Link Manager</Name>
+    <Assembly>BimLinkManager\BimLinkManager.dll</Assembly>
+    <FullClassName>BimLinkManager.App</FullClassName>
+    <ClientId>868A07B3-675C-4301-AE20-C3C4577D1F3F</ClientId>
+    <VendorId>ZhequanZhang</VendorId>
+    <VendorDescription>Zhequan Zhang - BIM Link Manager</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,7 @@
+bin/
+obj/
+*.user
+.vs/
+*.msi
+*.ps1
+Installer/Output/

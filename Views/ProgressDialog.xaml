@@ -1,0 +1,204 @@
+<Window x:Class="BimLinkManager.Views.ProgressDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BimLinkManager.Views"
+        Title="BIM Link Manager — Importing"
+        Width="600" Height="520"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="False"
+        Background="#FFFFFF"
+        ShowInTaskbar="False"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/BimLinkManager;component/Resources/BlmTheme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/BimLinkManager;component/Resources/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border BorderBrush="{StaticResource WindowBorderBrush}" BorderThickness="1">
+        <Grid Background="{StaticResource SurfaceBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ============ DARK HEADER ============ -->
+            <Border Grid.Row="0" Background="{StaticResource OnSurfaceBrush}" Padding="20,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Importing Models…"
+                               FontFamily="{StaticResource FontHeadline}"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="OverallPercent"
+                               Grid.Column="1"
+                               Text="0%"
+                               FontFamily="{StaticResource FontMono}"
+                               FontWeight="Bold"
+                               FontSize="13"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- ============ CURRENT FILE + BAR + STATS ============ -->
+            <StackPanel Grid.Row="1" Margin="20,20,20,0">
+
+                <!-- Current-file chip -->
+                <Border Background="{StaticResource SurfaceLowBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12,8"
+                        Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Style="{StaticResource IconStroke}"
+                              Data="{StaticResource IconDescription}"
+                              Stroke="{StaticResource DocIconBrush}"
+                              StrokeThickness="1.3"
+                              Width="12" Height="12"
+                              Margin="0,0,8,0"/>
+                        <TextBlock x:Name="CurrentFileLabel"
+                                   Grid.Column="1"
+                                   Style="{StaticResource LabelMd}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="(starting…)"/>
+                        <TextBlock x:Name="CurrentFilePercent"
+                                   Grid.Column="2"
+                                   Style="{StaticResource LabelMd}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0,0,0"
+                                   Text=""/>
+                    </Grid>
+                </Border>
+
+                <!-- Gradient bar -->
+                <Border Height="6"
+                        Background="{StaticResource SurfaceHighBrush}"
+                        CornerRadius="3"
+                        Margin="0,0,0,8"
+                        ClipToBounds="True">
+                    <Grid x:Name="ProgressTrack">
+                        <Rectangle x:Name="ProgressFill"
+                                   HorizontalAlignment="Left"
+                                   Width="0"
+                                   RadiusX="3" RadiusY="3"
+                                   Fill="{StaticResource GradProgress}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Stats row -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="SucceededLabel"
+                                   Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource SuccessBrush}"
+                                   Text="0 SUCCEEDED"/>
+                        <TextBlock Text=" · "
+                                   Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock x:Name="PendingLabel"
+                                   Style="{StaticResource LabelSm}"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Text="0 PENDING"/>
+                    </StackPanel>
+                    <TextBlock x:Name="TaskCountLabel"
+                               Grid.Column="1"
+                               Style="{StaticResource LabelSm}"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               Text="0 / 0 Complete"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- ============ CONSOLE ============ -->
+            <Border Grid.Row="2"
+                    Margin="20,14,20,14"
+                    Background="{StaticResource LogBgBrush}"
+                    CornerRadius="4"
+                    Padding="14,12">
+                <ScrollViewer x:Name="LogScroll"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              BorderThickness="0">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource BlmScrollBarV}"/>
+                    </ScrollViewer.Resources>
+                    <ItemsControl x:Name="LogList" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:LogLine}">
+                                <TextBlock Text="{Binding Text}"
+                                           FontFamily="{StaticResource FontMono}"
+                                           FontSize="11"
+                                           LineHeight="19"
+                                           TextWrapping="Wrap">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource LogFgBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Kind}" Value="Ok">
+                                                    <Setter Property="Foreground" Value="{StaticResource LogOkBrush}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Kind}" Value="Err">
+                                                    <Setter Property="Foreground" Value="{StaticResource LogErrBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ============ FOOTER ============ -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource SurfaceLowBrush}"
+                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="20,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="PhaseLabel"
+                               Style="{StaticResource LabelSm}"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               VerticalAlignment="Center"
+                               Text="LINKING MODEL"/>
+                    <Button x:Name="ActionBtn"
+                            Grid.Column="1"
+                            Style="{StaticResource BtnDangerSolid}"
+                            Content="Cancel Import"
+                            Click="ActionBtn_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

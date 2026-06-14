@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="BimLinkManager"
+           Manufacturer="Zhequan Zhang"
+           Version="1.0.0"
+           UpgradeCode="B5835C9F-76E3-4F14-8C5B-5EA8CFBA854A"
+           Scope="perUser"
+           InstallerVersion="500"
+           Compressed="yes">
+
+    <SummaryInformation Description="BimLinkManager - Batch link cloud-hosted BIM models from Autodesk Construction Cloud."
+                        Keywords="Revit, Autodesk, ACC, BIM, Plugin, BimLinkManager" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <!-- Directory layout: %AppData%\Autodesk\Revit\Addins\{year}\BimLinkManager\ -->
+    <StandardDirectory Id="AppDataFolder">
+      <Directory Id="AutodeskDir" Name="Autodesk">
+        <Directory Id="RevitDir" Name="Revit">
+          <Directory Id="AddinsDir" Name="Addins">
+            <Directory Id="Addins2024" Name="2024">
+              <Directory Id="PluginDir2024" Name="BimLinkManager" />
+            </Directory>
+            <Directory Id="Addins2025" Name="2025">
+              <Directory Id="PluginDir2025" Name="BimLinkManager" />
+            </Directory>
+            <Directory Id="Addins2026" Name="2026">
+              <Directory Id="PluginDir2026" Name="BimLinkManager" />
+            </Directory>
+            <Directory Id="Addins2027" Name="2027">
+              <Directory Id="PluginDir2027" Name="BimLinkManager" />
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="BimLinkManagerCore"
+             Title="BimLinkManager for Revit 2024-2027"
+             Level="1"
+             AllowAbsent="no">
+      <ComponentGroupRef Id="Revit2024_Addin" />
+      <ComponentGroupRef Id="Revit2024_DLLs" />
+      <ComponentGroupRef Id="Revit2025_Addin" />
+      <ComponentGroupRef Id="Revit2025_DLLs" />
+      <ComponentGroupRef Id="Revit2026_Addin" />
+      <ComponentGroupRef Id="Revit2026_DLLs" />
+      <ComponentGroupRef Id="Revit2027_Addin" />
+      <ComponentGroupRef Id="Revit2027_DLLs" />
+    </Feature>
+
+  </Package>
+
+  <Fragment>
+    <!-- ======================= 2024 (net48) ======================= -->
+    <ComponentGroup Id="Revit2024_Addin" Directory="Addins2024">
+      <Component Id="Addin2024" Guid="BA688476-0A1F-4F55-9FB5-95039E0A61C2">
+        <File Id="Addin2024_manifest" Source="..\BimLinkManager.addin" Name="BimLinkManager.addin" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Revit2024_DLLs" Directory="PluginDir2024">
+      <Component Id="DLLs2024" Guid="B1B24A5E-82AB-4569-B7C0-94D750AEE88F">
+        <File Id="DLL2024_BimLinkManager"        Source="..\bin\Release\net48\BimLinkManager.dll" KeyPath="yes" />
+        <File Id="DLL2024_StJson"       Source="..\bin\Release\net48\System.Text.Json.dll" />
+        <File Id="DLL2024_BclAsync"     Source="..\bin\Release\net48\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Id="DLL2024_Memory"       Source="..\bin\Release\net48\System.Memory.dll" />
+        <File Id="DLL2024_Buffers"      Source="..\bin\Release\net48\System.Buffers.dll" />
+        <File Id="DLL2024_Unsafe"       Source="..\bin\Release\net48\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Id="DLL2024_TaskExt"      Source="..\bin\Release\net48\System.Threading.Tasks.Extensions.dll" />
+        <File Id="DLL2024_Numerics"     Source="..\bin\Release\net48\System.Numerics.Vectors.dll" />
+        <File Id="DLL2024_ValueTuple"   Source="..\bin\Release\net48\System.ValueTuple.dll" />
+        <File Id="DLL2024_EncWeb"       Source="..\bin\Release\net48\System.Text.Encodings.Web.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- ======================= 2025 (net8.0-windows) ======================= -->
+    <ComponentGroup Id="Revit2025_Addin" Directory="Addins2025">
+      <Component Id="Addin2025" Guid="98F02932-FAE3-45CD-B775-35BCEAA4A2A1">
+        <File Id="Addin2025_manifest" Source="..\BimLinkManager.addin" Name="BimLinkManager.addin" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Revit2025_DLLs" Directory="PluginDir2025">
+      <Component Id="DLLs2025" Guid="971AFFE8-67AB-48E8-9C2F-FB185935A0C8">
+        <File Id="DLL2025_BimLinkManager"       Source="..\bin\Release\net8.0-windows\BimLinkManager.dll" KeyPath="yes" />
+        <File Id="DLL2025_Deps"        Source="..\bin\Release\net8.0-windows\BimLinkManager.deps.json" />
+        <File Id="DLL2025_RuntimeCfg"  Source="..\bin\Release\net8.0-windows\BimLinkManager.runtimeconfig.json" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- ======================= 2026 (net8.0-windows) ======================= -->
+    <ComponentGroup Id="Revit2026_Addin" Directory="Addins2026">
+      <Component Id="Addin2026" Guid="5989D418-3B63-4DB9-A9C1-04C898EEF376">
+        <File Id="Addin2026_manifest" Source="..\BimLinkManager.addin" Name="BimLinkManager.addin" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Revit2026_DLLs" Directory="PluginDir2026">
+      <Component Id="DLLs2026" Guid="2424C025-773B-4B18-867E-8FC2B0AB74FD">
+        <File Id="DLL2026_BimLinkManager"       Source="..\bin\Release\net8.0-windows\BimLinkManager.dll" KeyPath="yes" />
+        <File Id="DLL2026_Deps"        Source="..\bin\Release\net8.0-windows\BimLinkManager.deps.json" />
+        <File Id="DLL2026_RuntimeCfg"  Source="..\bin\Release\net8.0-windows\BimLinkManager.runtimeconfig.json" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- ======================= 2027 (net8.0-windows) ======================= -->
+    <ComponentGroup Id="Revit2027_Addin" Directory="Addins2027">
+      <Component Id="Addin2027" Guid="7EFD5FB2-A914-4A03-A597-C52B812E9CFF">
+        <File Id="Addin2027_manifest" Source="..\BimLinkManager.addin" Name="BimLinkManager.addin" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Revit2027_DLLs" Directory="PluginDir2027">
+      <Component Id="DLLs2027" Guid="5CD60B58-AB06-4761-832F-3FF8A349E1E1">
+        <File Id="DLL2027_BimLinkManager"       Source="..\bin\Release\net8.0-windows\BimLinkManager.dll" KeyPath="yes" />
+        <File Id="DLL2027_Deps"        Source="..\bin\Release\net8.0-windows\BimLinkManager.deps.json" />
+        <File Id="DLL2027_RuntimeCfg"  Source="..\bin\Release\net8.0-windows\BimLinkManager.runtimeconfig.json" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>
