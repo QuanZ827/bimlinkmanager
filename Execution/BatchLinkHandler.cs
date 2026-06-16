@@ -98,6 +98,21 @@ namespace BimLinkManager.Execution
 
                 try
                 {
+                    // Region comes ONLY from the host document's cloud path (mirrors WSPICT). If it
+                    // is unavailable, hard-stop the whole batch — never fall back to the APS API
+                    // region, which is incompatible with ConvertCloudGUIDsToCloudPath. See
+                    // FIX_REGION_COPY_WSPICT.md.
+                    if (string.IsNullOrEmpty(hostRegion))
+                    {
+                        foreach (var t in queue)
+                        {
+                            t.Status = LinkTaskStatus.Failed;
+                            t.StatusMessage = "Host document has no cloud region. Open this from an ACC workshared/cloud model.";
+                            TaskCompleted?.Invoke(t);
+                        }
+                        return; // do NOT continue into the loop
+                    }
+
                     int i = 0;
                     foreach (var task in queue)
                     {
@@ -180,9 +195,7 @@ namespace BimLinkManager.Execution
                 return;
             }
 
-            var region = !string.IsNullOrEmpty(hostRegion)
-                ? hostRegion
-                : (!string.IsNullOrEmpty(file.Region) ? file.Region : AppConstants.DefaultCloudRegion);
+            var region = hostRegion; // single source of truth, mirrors WSPICT. Guard in Execute guarantees non-empty.
 
             ModelPath cloudPath;
             try
