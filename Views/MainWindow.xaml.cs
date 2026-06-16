@@ -160,7 +160,6 @@ namespace BimLinkManager.Views
         {
             LoadWorksetsFromDocument();
             BatchPane.OnShellReady();
-            LinkPane.OnShellReady();
             await AutoDetectAndLoadAsync();
         }
 
@@ -261,27 +260,6 @@ namespace BimLinkManager.Views
                 ? System.Windows.Visibility.Visible
                 : System.Windows.Visibility.Collapsed;
             BatchPane.ApplyFileFilter(SearchBox.Text);
-        }
-
-        // ============================================================
-        // Nav switching
-        // ============================================================
-
-        private void NavBatch_Click(object sender, RoutedEventArgs e)
-        {
-            NavBatch.IsChecked = true;
-            NavLinks.IsChecked = false;
-            BatchPane.Visibility = System.Windows.Visibility.Visible;
-            LinkPane.Visibility = System.Windows.Visibility.Collapsed;
-        }
-
-        private void NavLinks_Click(object sender, RoutedEventArgs e)
-        {
-            NavBatch.IsChecked = false;
-            NavLinks.IsChecked = true;
-            BatchPane.Visibility = System.Windows.Visibility.Collapsed;
-            LinkPane.Visibility = System.Windows.Visibility.Visible;
-            LinkPane.Refresh();
         }
     }
 }

@@ -160,7 +160,7 @@ namespace BimLinkManager.Views
 
         private void RefreshLinkedModelGuids()
         {
-            // Same document path the LinkListView uses.
+            // Active document from the shell (F1 already-linked detection).
             var doc = Shell?.UiApp?.ActiveUIDocument?.Document;
             _linkedModelGuids = LinkListService.GetLinkedCloudModelGuids(doc);
         }
@@ -450,5 +450,16 @@ namespace BimLinkManager.Views
             => (value is bool b && b) ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => System.Windows.Data.Binding.DoNothing;
+    }
+
+    // Shared bool-inverting converter for BatchView's already-linked checkbox
+    // (IsEnabled = !IsAlreadyLinked).
+    public class BoolInverter : IValueConverter
+    {
+        public static readonly BoolInverter Instance = new BoolInverter();
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => (value is bool b) ? !b : (object)true;
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => (value is bool b) ? !b : (object)true;
     }
 }

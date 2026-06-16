@@ -223,59 +223,12 @@
             </Border>
 
             <!-- ============================================================
-                 ROW 2 — NAV RAIL + CONTENT
+                 ROW 2 — CONTENT (Batch Link only; nav rail + second view removed)
                  ============================================================ -->
             <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="64"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Nav rail: BATCH on top, LINKS below -->
-                <Border Grid.Column="0"
-                        Background="{StaticResource SurfaceLowestBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
-                        BorderThickness="0,0,1,0">
-                    <StackPanel HorizontalAlignment="Center" Margin="0,16,0,0">
-                        <ToggleButton x:Name="NavBatch"
-                                      Style="{StaticResource BtnNavTab}"
-                                      IsChecked="True"
-                                      Click="NavBatch_Click"
-                                      ToolTip="Batch link"
-                                      Margin="0,0,0,8">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Path Style="{StaticResource IconStroke}"
-                                      Data="{StaticResource IconGrid}"
-                                      Width="18" Height="18"
-                                      HorizontalAlignment="Center"/>
-                                <TextBlock Text="BATCH"
-                                           Style="{StaticResource NavLabel}"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,3,0,0"/>
-                            </StackPanel>
-                        </ToggleButton>
-                        <ToggleButton x:Name="NavLinks"
-                                      Style="{StaticResource BtnNavTab}"
-                                      Click="NavLinks_Click"
-                                      ToolTip="Project links">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Path Style="{StaticResource IconStroke}"
-                                      Data="{StaticResource IconLink}"
-                                      Width="18" Height="18"
-                                      HorizontalAlignment="Center"/>
-                                <TextBlock Text="LINKS"
-                                           Style="{StaticResource NavLabel}"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,3,0,0"/>
-                            </StackPanel>
-                        </ToggleButton>
-                    </StackPanel>
-                </Border>
-
                 <!-- Content host -->
-                <Grid Grid.Column="1">
+                <Grid>
                     <local:BatchView x:Name="BatchPane"/>
-                    <local:LinkListView x:Name="LinkPane" Visibility="Collapsed"/>
 
                     <!-- Floating error toast (bottom-centre, clear of the pane footers) -->
                     <Border x:Name="ErrorToast"
