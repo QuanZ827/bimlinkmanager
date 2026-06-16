@@ -25,6 +25,11 @@ namespace BimLinkManager.Views
         private bool _allDone;
         private LinkTask _currentTask;
 
+        /// <summary>Raised on the UI thread once the batch finishes, so the owner can do
+        /// post-run cleanup (this dialog is shown non-modally, so the caller can't do it
+        /// inline after Show()).</summary>
+        public event Action BatchFinished;
+
         public ProgressDialog(BatchLinkHandler handler, List<LinkTask> tasks)
         {
             InitializeComponent();
@@ -46,7 +51,6 @@ namespace BimLinkManager.Views
             };
 
             AppendLog("> initialising revit bridge…", LogKind.Info);
-            AppendLog("> link established", LogKind.Info);
         }
 
         private void OnTaskStarted(LinkTask task)
@@ -113,6 +117,7 @@ namespace BimLinkManager.Views
                 UpdateSummary();
                 ProgressFill.Width = ProgressTrack.ActualWidth;
                 OverallPercent.Text = "100%";
+                BatchFinished?.Invoke();
             }));
         }
 

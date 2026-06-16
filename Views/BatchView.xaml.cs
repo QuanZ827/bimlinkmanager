@@ -405,19 +405,25 @@ namespace BimLinkManager.Views
             var tasks = Queue.ToList();
             var dlg = new ProgressDialog(Shell.BatchHandler, tasks) { Owner = Shell };
 
-            Shell.BatchHandler.Start(tasks);
-            dlg.ShowDialog();
-
-            // Succeeded tasks leave the queue; failed ones stay with their error line.
-            for (int i = Queue.Count - 1; i >= 0; i--)
+            // Show NON-MODALLY. The handler is an IExternalEventHandler whose Execute must
+            // run on Revit's UI thread; ShowDialog() would block that thread, the
+            // ExternalEvent would never fire, and the batch would hang (mirrors WSPICT,
+            // which raises the event and returns without a modal dialog). Post-run cleanup
+            // must therefore happen when the batch completes, not after a modal returns.
+            dlg.BatchFinished += () =>
             {
-                if (Queue[i].Status == LinkTaskStatus.Succeeded) Queue.RemoveAt(i);
-            }
+                for (int i = Queue.Count - 1; i >= 0; i--)
+                {
+                    if (Queue[i].Status == LinkTaskStatus.Succeeded) Queue.RemoveAt(i);
+                }
+                // F1: the run just added links — refresh the dim/disable flags.
+                RefreshLinkedModelGuids();
+                ReapplyAlreadyLinkedFlags();
+                UpdateCounts();
+            };
 
-            // F1: the run just added links — refresh the dim/disable flags.
-            RefreshLinkedModelGuids();
-            ReapplyAlreadyLinkedFlags();
-            UpdateCounts();
+            dlg.Show();
+            Shell.BatchHandler.Start(tasks);
         }
     }
 
