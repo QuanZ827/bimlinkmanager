@@ -79,7 +79,7 @@ namespace BimLinkManager.Execution
 
                 // Region MUST come from the host document's own cloud path — the APS API region
                 // string is not guaranteed to match what ModelPathUtils expects, which produces an
-                // unresolvable cloud path ("path not found"). See BUGFIX_PATH_NOT_FOUND.md.
+                // unresolvable cloud path ("path not found").
                 string hostRegion = TryGetHostCloudRegion(doc);
 
                 var isWorkshared = doc.IsWorkshared;
@@ -96,8 +96,7 @@ namespace BimLinkManager.Execution
                 {
                     // Region comes ONLY from the host document's cloud path (mirrors WSPICT). If it
                     // is unavailable, hard-stop the whole batch — never fall back to the APS API
-                    // region, which is incompatible with ConvertCloudGUIDsToCloudPath. See
-                    // FIX_REGION_COPY_WSPICT.md.
+                    // region, which is incompatible with ConvertCloudGUIDsToCloudPath.
                     if (string.IsNullOrEmpty(hostRegion))
                     {
                         foreach (var t in queue)

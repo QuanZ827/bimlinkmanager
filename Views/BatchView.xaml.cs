@@ -28,7 +28,7 @@ namespace BimLinkManager.Views
         private string _currentFilter = string.Empty;
         private AccFolder _selectedFolder;
         private string _projectContext = string.Empty;
-        private HashSet<string> _linkedModelGuids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> _linkedModelNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // FolderNodeControl listens to repaint the selected tree row.
         internal event Action SelectedFolderChanged;
@@ -46,7 +46,7 @@ namespace BimLinkManager.Views
         public void OnShellReady()
         {
             InitGlobalConfigOptions();
-            RefreshLinkedModelGuids();
+            RefreshLinkedModelNames();
             UpdateCounts();
             UpdateEmptyState();
         }
@@ -66,7 +66,7 @@ namespace BimLinkManager.Views
             _unfilteredFiles.Clear();
             _selectedFolder = null;
             SelectedFolderChanged?.Invoke();
-            RefreshLinkedModelGuids();
+            RefreshLinkedModelNames();
             UpdateBreadcrumb();
             UpdateCounts();
             UpdateEmptyState();
@@ -126,10 +126,9 @@ namespace BimLinkManager.Views
                 foreach (var file in folder.Files)
                 {
                     var row = new CheckableFileRow(file);
-                    // F1: dim rows whose cloud model is already in the document
-                    row.IsAlreadyLinked = file.HasCloudGuids
-                        && !string.IsNullOrEmpty(file.ModelGuid)
-                        && _linkedModelGuids.Contains(file.ModelGuid);
+                    // F1: dim rows whose model is already linked in the document. Name-based
+                    // (mirrors WSPICT) — cloud ModelGUIDs are unreadable on unloaded links.
+                    row.IsAlreadyLinked = _linkedModelNames.Contains(LinkListService.NormalizeModelName(file.Name));
                     _unfilteredFiles.Add(row);
                 }
             }
@@ -158,20 +157,18 @@ namespace BimLinkManager.Views
         // F1 — already-linked detection
         // ============================================================
 
-        private void RefreshLinkedModelGuids()
+        private void RefreshLinkedModelNames()
         {
             // Active document from the shell (F1 already-linked detection).
             var doc = Shell?.UiApp?.ActiveUIDocument?.Document;
-            _linkedModelGuids = LinkListService.GetLinkedCloudModelGuids(doc);
+            _linkedModelNames = LinkListService.GetLinkedModelNames(doc);
         }
 
         private void ReapplyAlreadyLinkedFlags()
         {
             foreach (var row in _unfilteredFiles)
             {
-                var linked = row.File.HasCloudGuids
-                    && !string.IsNullOrEmpty(row.File.ModelGuid)
-                    && _linkedModelGuids.Contains(row.File.ModelGuid);
+                var linked = _linkedModelNames.Contains(LinkListService.NormalizeModelName(row.File.Name));
                 row.IsAlreadyLinked = linked;
                 if (linked) row.IsChecked = false;
             }
@@ -191,7 +188,7 @@ namespace BimLinkManager.Views
         {
             if (_selectedFolder == null) return;
             _selectedFolder.IsLoaded = false;
-            RefreshLinkedModelGuids();
+            RefreshLinkedModelNames();
             _ = LoadFolderContentsAsync(_selectedFolder);
         }
 
@@ -202,13 +199,17 @@ namespace BimLinkManager.Views
         private void InitGlobalConfigOptions()
         {
             GlobalPositioning.Items.Clear();
+            // The four canonical Revit link placements (ImportPlacement), labeled exactly like
+            // Revit's own link dialog (mirrors WSPICT). Each maps to the right ImportPlacement in
+            // BatchLinkHandler.MapPlacement. The old list mislabeled Shared as "Project Base Point",
+            // hid the real Project Base Point option (AutoByLocation -> Site), and listed three
+            // entries that all collapsed to Origin.
             foreach (var item in new[]
             {
-                new ComboItem(PositioningSystem.AutoOriginToInternalOrigin,    "Auto - Internal Origin"),
-                new ComboItem(PositioningSystem.AutoCenterToCenter,            "Auto - Center to Center"),
-                new ComboItem(PositioningSystem.AutoBySharedCoordinates,       "Auto - Project Base Point"),
-                new ComboItem(PositioningSystem.InternalOriginToInternalOrigin,"Manual - Center"),
-                new ComboItem(PositioningSystem.OriginToOrigin,                "Origin to Origin")
+                new ComboItem(PositioningSystem.AutoOriginToInternalOrigin, "Auto — Internal Origin to Internal Origin"),
+                new ComboItem(PositioningSystem.AutoCenterToCenter,         "Auto — Center to Center"),
+                new ComboItem(PositioningSystem.AutoBySharedCoordinates,    "Auto — By Shared Coordinates"),
+                new ComboItem(PositioningSystem.AutoByLocation,             "Auto — Project Base Point to Project Base Point")
             })
             {
                 GlobalPositioning.Items.Add(item);
@@ -335,8 +336,7 @@ namespace BimLinkManager.Views
         private void EnqueueSingleFile(AccRvtFile file)
         {
             if (file == null) return;
-            if (file.HasCloudGuids && !string.IsNullOrEmpty(file.ModelGuid)
-                && _linkedModelGuids.Contains(file.ModelGuid)) return;   // F1
+            if (_linkedModelNames.Contains(LinkListService.NormalizeModelName(file.Name))) return;   // F1
             if (Queue.Any(q => string.Equals(q.Configuration.File.VersionUrn, file.VersionUrn, StringComparison.OrdinalIgnoreCase))) return;
             var cfg = new LinkConfiguration { File = file, Positioning = CurrentPositioning(), ReferenceType = CurrentReferenceType() };
             var defaultWorkset = GlobalWorkset.Text;
@@ -417,7 +417,7 @@ namespace BimLinkManager.Views
                     if (Queue[i].Status == LinkTaskStatus.Succeeded) Queue.RemoveAt(i);
                 }
                 // F1: the run just added links — refresh the dim/disable flags.
-                RefreshLinkedModelGuids();
+                RefreshLinkedModelNames();
                 ReapplyAlreadyLinkedFlags();
                 UpdateCounts();
             };

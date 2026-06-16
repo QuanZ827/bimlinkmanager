@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using BimLinkManager.Diagnostics;
 
@@ -13,41 +12,45 @@ namespace BimLinkManager.Services
     public static class LinkListService
     {
         /// <summary>
-        /// Model GUIDs ("D" format, case-insensitive) of every cloud model already
-        /// linked into the document. Used by BatchView to dim/disable rows (F1).
+        /// Normalized names (trimmed, trailing ".rvt" stripped, case-insensitive) of every
+        /// RevitLinkType already in the document. Name-based BY DESIGN: extracting a cloud
+        /// ModelGUID from an UNLOADED link is unreliable across Revit versions and usually returns
+        /// nothing, so the old GUID approach silently matched nothing and no rows were dimmed.
+        /// Element-name matching is the dependable signal (mirrors WSPICT).
         /// </summary>
-        public static HashSet<string> GetLinkedCloudModelGuids(Document doc)
+        public static HashSet<string> GetLinkedModelNames(Document doc)
         {
-            var guids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (doc == null) return guids;
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (doc == null) return names;
 
             try
             {
-                var coll = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkType)).Cast<RevitLinkType>().ToList();
-
-                foreach (var lt in coll)
+                var coll = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkType));
+                foreach (Element el in coll)
                 {
-                    if (lt == null) continue;
-                    try
-                    {
-                        var extRef = lt.GetExternalFileReference();
-                        if (extRef == null) continue;
-                        var modelPath = extRef.GetAbsolutePath();
-                        if (modelPath == null || !modelPath.CloudPath) continue;
-                        guids.Add(modelPath.GetModelGUID().ToString("D"));
-                    }
-                    catch
-                    {
-                        // Per-element tolerance: skip links whose path can't be read.
-                    }
+                    var n = NormalizeModelName(el?.Name);
+                    if (!string.IsNullOrEmpty(n)) names.Add(n);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("LinkListService.GetLinkedCloudModelGuids failed", ex);
+                Log.Error("LinkListService.GetLinkedModelNames failed", ex);
             }
 
-            return guids;
+            return names;
+        }
+
+        /// <summary>
+        /// Trim and strip a trailing ".rvt" (case-insensitive) so an ACC file name and a
+        /// RevitLinkType element name compare equal (mirrors WSPICT's NormalizeModelName).
+        /// </summary>
+        public static string NormalizeModelName(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return string.Empty;
+            var n = name.Trim();
+            if (n.EndsWith(".rvt", StringComparison.OrdinalIgnoreCase))
+                n = n.Substring(0, n.Length - 4).Trim();
+            return n;
         }
     }
 }
