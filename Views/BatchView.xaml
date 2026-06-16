@@ -662,7 +662,7 @@
                                                   FontSize="10"
                                                   IsEditable="True"
                                                   Margin="0,7,0,0"
-                                                  Text="{Binding Configuration.WorksetName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                  Text="{Binding Configuration.WorksetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   ItemsSource="{Binding DataContext.WorksetNames, RelativeSource={RelativeSource AncestorType=Window}}"/>
 
                                         <!-- Progress (hidden while Pending) -->

@@ -118,12 +118,15 @@ namespace BimLinkManager.Execution
                             task.Status = LinkTaskStatus.Cancelled;
                             task.StatusMessage = "Cancelled before start.";
                             TaskCompleted?.Invoke(task);
+                            DrainUi();
                             continue;
                         }
 
                         TaskStarted?.Invoke(task);
-                        ProcessTask(doc, task, worksetTable, isWorkshared, hostRegion);
+                        DrainUi();   // paint "LINKING <model>" before the blocking link op
+                        ProcessTask(doc, task, worksetTable, isWorkshared, hostRegion, originalActive);
                         TaskCompleted?.Invoke(task);
+                        DrainUi();   // paint this model's result before starting the next one
                     }
                 }
                 finally
@@ -166,7 +169,7 @@ namespace BimLinkManager.Execution
             return null;
         }
 
-        private void ProcessTask(Document doc, LinkTask task, WorksetTable worksetTable, bool isWorkshared, string hostRegion)
+        private void ProcessTask(Document doc, LinkTask task, WorksetTable worksetTable, bool isWorkshared, string hostRegion, WorksetId batchOriginalActive)
         {
             var cfg = task.Configuration;
             var file = cfg?.File;
@@ -213,18 +216,30 @@ namespace BimLinkManager.Execution
                 return;
             }
 
-            // Set target workset BEFORE creating link
-            if (isWorkshared && worksetTable != null && !string.IsNullOrEmpty(cfg.WorksetName))
+            // Set target workset BEFORE creating link. First RESET to the batch baseline so a
+            // task with no (or an unfound) workset never inherits the PREVIOUS task's active
+            // workset — that cascade was dropping every model into one workset. Mirrors WSPICT,
+            // which restores the active workset per task.
+            if (isWorkshared && worksetTable != null)
             {
-                var target = FindUserWorkset(doc, cfg.WorksetName);
-                if (target != null)
+                if (batchOriginalActive != null)
                 {
-                    try { worksetTable.SetActiveWorksetId(target.Id); }
-                    catch (Exception ex) { Log.Warn("SetActiveWorksetId failed: " + ex.Message); }
+                    try { worksetTable.SetActiveWorksetId(batchOriginalActive); }
+                    catch (Exception ex) { Log.Warn("Reset to batch baseline workset failed: " + ex.Message); }
                 }
-                else
+
+                if (!string.IsNullOrEmpty(cfg.WorksetName))
                 {
-                    Log.Info("Workset '" + cfg.WorksetName + "' not found; using current active workset.");
+                    var target = FindUserWorkset(doc, cfg.WorksetName);
+                    if (target != null)
+                    {
+                        try { worksetTable.SetActiveWorksetId(target.Id); }
+                        catch (Exception ex) { Log.Warn("SetActiveWorksetId failed: " + ex.Message); }
+                    }
+                    else
+                    {
+                        Log.Info("Workset '" + cfg.WorksetName + "' not found; using batch default workset.");
+                    }
                 }
             }
 
@@ -346,6 +361,22 @@ namespace BimLinkManager.Execution
         {
             if (string.IsNullOrEmpty(s) || s.Length <= max) return s ?? string.Empty;
             return s.Substring(0, max) + "...";
+        }
+
+        // Pump the WPF dispatcher (down to Background priority) so the progress updates that
+        // ProgressDialog posts via Dispatcher.BeginInvoke actually paint NOW. Execute runs on
+        // Revit's main/UI thread, so without this the whole queue is processed in one blocking
+        // pass and every queued update flushes together at the very end — the batch looked like
+        // it jumped straight to "done" instead of advancing one model at a time. Called only
+        // between tasks (never inside a transaction), so it can't reenter the Revit API.
+        private static void DrainUi()
+        {
+            try
+            {
+                var disp = System.Windows.Threading.Dispatcher.FromThread(System.Threading.Thread.CurrentThread);
+                disp?.Invoke(new Action(() => { }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch { /* no dispatcher on this thread — nothing to pump */ }
         }
     }
 }
