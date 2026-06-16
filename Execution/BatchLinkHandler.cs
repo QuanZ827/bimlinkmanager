@@ -80,6 +80,12 @@ namespace BimLinkManager.Execution
                 }
 
                 var doc = uiDoc.Document;
+
+                // Region MUST come from the host document's own cloud path — the APS API region
+                // string is not guaranteed to match what ModelPathUtils expects, which produces an
+                // unresolvable cloud path ("path not found"). See BUGFIX_PATH_NOT_FOUND.md.
+                string hostRegion = TryGetHostCloudRegion(doc);
+
                 var isWorkshared = doc.IsWorkshared;
 
                 WorksetId originalActive = null;
@@ -105,7 +111,7 @@ namespace BimLinkManager.Execution
                         }
 
                         TaskStarted?.Invoke(task);
-                        ProcessTask(doc, task, worksetTable, isWorkshared);
+                        ProcessTask(doc, task, worksetTable, isWorkshared, hostRegion);
                         TaskCompleted?.Invoke(task);
                     }
                 }
@@ -128,7 +134,28 @@ namespace BimLinkManager.Execution
             }
         }
 
-        private void ProcessTask(Document doc, LinkTask task, WorksetTable worksetTable, bool isWorkshared)
+        private static string TryGetHostCloudRegion(Document doc)
+        {
+            try
+            {
+                if (doc != null && doc.IsModelInCloud)
+                {
+                    var cp = doc.GetCloudModelPath();
+                    if (cp != null)
+                    {
+                        var rp = cp.GetType().GetProperty("Region");
+                        if (rp != null) return rp.GetValue(cp) as string;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("TryGetHostCloudRegion failed: " + ex.Message);
+            }
+            return null;
+        }
+
+        private void ProcessTask(Document doc, LinkTask task, WorksetTable worksetTable, bool isWorkshared, string hostRegion)
         {
             var cfg = task.Configuration;
             var file = cfg?.File;
@@ -153,7 +180,9 @@ namespace BimLinkManager.Execution
                 return;
             }
 
-            var region = string.IsNullOrEmpty(file.Region) ? AppConstants.DefaultCloudRegion : file.Region;
+            var region = !string.IsNullOrEmpty(hostRegion)
+                ? hostRegion
+                : (!string.IsNullOrEmpty(file.Region) ? file.Region : AppConstants.DefaultCloudRegion);
 
             ModelPath cloudPath;
             try
@@ -163,7 +192,7 @@ namespace BimLinkManager.Execution
             catch (Exception ex)
             {
                 task.Status = LinkTaskStatus.Failed;
-                task.StatusMessage = "Could not build cloud path: " + ex.Message;
+                task.StatusMessage = "Could not build cloud path (region='" + region + "'): " + ex.Message;
                 Log.Error("ConvertCloudGUIDsToCloudPath failed for " + file.Name, ex);
                 return;
             }
