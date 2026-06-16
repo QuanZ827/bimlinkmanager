@@ -423,7 +423,8 @@ namespace BimLinkManager.Views
             };
 
             dlg.Show();
-            Shell.BatchHandler.Start(tasks);
+            Shell.BatchHandler.Enqueue(tasks);
+            App.BatchLinkExternalEvent.Raise();
         }
     }
 

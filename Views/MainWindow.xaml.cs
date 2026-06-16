@@ -22,7 +22,7 @@ namespace BimLinkManager.Views
         public UIApplication UiApp { get; }
         public TokenService Tokens { get; }
         public AccDataService Acc { get; }
-        public BatchLinkHandler BatchHandler { get; }
+        public BatchLinkHandler BatchHandler => App.BatchHandler;
 
         public AccHub CurrentHub { get; private set; }
         public AccProject CurrentProject { get; private set; }
@@ -43,7 +43,6 @@ namespace BimLinkManager.Views
             UiApp = uiApp;
             Tokens = new TokenService();
             Acc = new AccDataService(Tokens);
-            BatchHandler = new BatchLinkHandler();
 
             Loaded += MainWindow_Loaded;
             Closed += MainWindow_Closed;

@@ -15,7 +15,6 @@ namespace BimLinkManager.Execution
     /// </summary>
     public class BatchLinkHandler : IExternalEventHandler
     {
-        private readonly ExternalEvent _event;
         private readonly object _gate = new object();
         private List<LinkTask> _queue;
         private int _cancelFlag;
@@ -25,14 +24,12 @@ namespace BimLinkManager.Execution
         public event Action<LinkTask> TaskCompleted;
         public event Action BatchCompleted;
 
-        public BatchLinkHandler()
-        {
-            _event = ExternalEvent.Create(this);
-        }
-
         public bool IsRunning { get; private set; }
 
-        public void Start(IEnumerable<LinkTask> tasks)
+        // Queues tasks for the next ExternalEvent firing. The event itself is owned and
+        // raised by App.BatchLinkExternalEvent (created in App.OnStartup) — the handler must
+        // NOT create or raise its own ExternalEvent. Mirrors WSPICT.
+        public void Enqueue(IEnumerable<LinkTask> tasks)
         {
             if (tasks == null) return;
             lock (_gate)
@@ -40,7 +37,6 @@ namespace BimLinkManager.Execution
                 _queue = new List<LinkTask>(tasks);
                 Interlocked.Exchange(ref _cancelFlag, 0);
             }
-            _event.Raise();
         }
 
         public void Cancel()

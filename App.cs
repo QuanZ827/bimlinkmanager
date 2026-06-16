@@ -11,6 +11,13 @@ namespace BimLinkManager
         internal static App Instance { get; private set; }
         internal UIControlledApplication UiApp { get; private set; }
 
+        // The batch-link ExternalEvent + handler MUST be created here in OnStartup (a valid
+        // Revit API context), not in a window constructor — an ExternalEvent created off the
+        // API context is never serviced, so Raise() silently no-ops and Execute never runs.
+        // Mirrors WSPICT App.cs. Owned by App; the window raises BatchLinkExternalEvent.
+        public static Execution.BatchLinkHandler BatchHandler { get; private set; }
+        public static ExternalEvent BatchLinkExternalEvent { get; private set; }
+
         public Result OnStartup(UIControlledApplication application)
         {
             try
@@ -18,6 +25,9 @@ namespace BimLinkManager
                 Instance = this;
                 UiApp = application;
                 AppConstants.EnsureAppDataFolder();
+
+                BatchHandler = new Execution.BatchLinkHandler();
+                BatchLinkExternalEvent = ExternalEvent.Create(BatchHandler);
 
                 try
                 {
@@ -59,6 +69,7 @@ namespace BimLinkManager
 
         public Result OnShutdown(UIControlledApplication application)
         {
+            BatchLinkExternalEvent?.Dispose();
             return Result.Succeeded;
         }
 
