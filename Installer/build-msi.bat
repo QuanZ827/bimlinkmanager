@@ -44,7 +44,7 @@ if not exist "%~dp0Output" mkdir "%~dp0Output"
 
 :: CRITICAL: pushd to script dir so .wxs relative paths resolve correctly
 pushd "%~dp0"
-wix build "%~dp0BimLinkManager.wxs" -o "%~dp0Output\BimLinkManager_Setup_v1.0.4.msi" -arch x64
+wix build "%~dp0BimLinkManager.wxs" -o "%~dp0Output\BimLinkManager_Setup_v1.0.5.msi" -arch x64
 set "WIXRC=%ERRORLEVEL%"
 popd
 
@@ -56,7 +56,7 @@ if not "%WIXRC%"=="0" (
 
 echo.
 echo ==========================================
-echo   SUCCESS! MSI: Installer\Output\BimLinkManager_Setup_v1.0.4.msi
+echo   SUCCESS! MSI: Installer\Output\BimLinkManager_Setup_v1.0.5.msi
 echo ==========================================
 
 endlocal

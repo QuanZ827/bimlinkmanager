@@ -283,8 +283,10 @@ namespace BimLinkManager.Services
         // ============================================================
 
         /// <summary>
-        /// Extracts the hub name and project name from a Revit cloud path like
-        /// "BIM 360://HubName/ProjectName/Folder/File.rvt".
+        /// Extracts the project name from a Revit cloud path like
+        /// "BIM 360://ProjectName/Project Files/Folder/File.rvt". The first segment after
+        /// "://" is the project name. hubName is always null (the hub is not in the path;
+        /// it is resolved by searching all hubs for the project name).
         /// </summary>
         public static (string hubName, string projectName) ParseCloudPathName(string pathName)
         {
@@ -292,10 +294,13 @@ namespace BimLinkManager.Services
             var schemeIdx = pathName.IndexOf("://", StringComparison.Ordinal);
             if (schemeIdx < 0) return (null, null);
             var rest = pathName.Substring(schemeIdx + 3);
-            var parts = rest.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0) return (null, null);
-            if (parts.Length == 1) return (parts[0], null);
-            return (parts[0], parts[1]);
+            // ACC/BIM360 path: "<scheme>://<projectName>/Project Files/<folder...>/<file>.rvt"
+            // The FIRST segment after "://" is the project name (mirrors WSPICT). The hub is
+            // NOT in the path — it is resolved by searching all hubs for this project name, so
+            // hubName is returned null here on purpose.
+            var slashIdx = rest.IndexOf('/');
+            var projectName = slashIdx > 0 ? rest.Substring(0, slashIdx) : rest;
+            return (null, projectName);
         }
 
         // ============================================================
