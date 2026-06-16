@@ -33,7 +33,16 @@ namespace BimLinkManager.Commands
                 {
                     Owner = Autodesk.Windows.ComponentManager.ApplicationWindow
                 };
-                window.ShowDialog();
+
+                // MUST be modeless (Show), NOT modal (ShowDialog). ShowDialog blocks the
+                // Revit main thread in a nested WPF message pump until the window closes,
+                // so Revit never returns to its own loop to service ExternalEvents — the
+                // batch's App.BatchLinkExternalEvent.Raise() is then a silent no-op and
+                // Execute never runs (the batch hangs forever). Mirrors WSPICT, which opens
+                // its BatchLinkWindow with Show(). This was THE batch-hang bug — every
+                // earlier fix chased ExternalEvent timing / the inner ProgressDialog, but
+                // the real blocker was this outer window being modal.
+                window.Show();
 
                 return Result.Succeeded;
             }
