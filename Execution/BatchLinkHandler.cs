@@ -197,6 +197,13 @@ namespace BimLinkManager.Execution
 
             var region = hostRegion; // single source of truth, mirrors WSPICT. Guard in Execute guarantees non-empty.
 
+            // [LINK] temporary diagnostic — confirms the exact triple fed to the cloud-path API.
+            // Remove before publishing. Lets us prove projectGuid is now from the correct project.
+            Log.Info("[LINK] region=" + region
+                + " projectGuid=" + projectGuid.ToString("D")
+                + " modelGuid=" + modelGuid.ToString("D")
+                + " file=" + (file.Name ?? "?"));
+
             ModelPath cloudPath;
             try
             {

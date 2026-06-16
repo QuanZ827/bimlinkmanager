@@ -89,7 +89,7 @@ namespace BimLinkManager.Views
             try
             {
                 var contents = await Shell.Acc.GetFolderContentsAsync(
-                    Shell.CurrentProject.Id, folder.Id, Shell.CurrentHub?.Region, default);
+                    Shell.CurrentProject.Id, folder.Id, Shell.CurrentProject.Region, default);
 
                 folder.Subfolders.Clear();
                 foreach (var sub in contents.Subfolders)

@@ -200,7 +200,7 @@ namespace BimLinkManager.Views
                 }
 
                 var pathName = doc.PathName ?? string.Empty;
-                var (hubName, projectName) = AccDataService.ParseCloudPathName(pathName);
+                var (_, projectName) = AccDataService.ParseCloudPathName(pathName);
 
                 if (string.IsNullOrEmpty(projectName))
                 {
@@ -222,19 +222,19 @@ namespace BimLinkManager.Views
                     return;
                 }
 
-                CurrentHub = hubs.FirstOrDefault(h => string.Equals(h.Name, hubName, StringComparison.OrdinalIgnoreCase))
-                    ?? hubs[0];
-
-                var projects = await Acc.GetProjectsAsync(CurrentHub, _cts.Token);
-                CurrentProject = projects.FirstOrDefault(p => string.Equals(p.Name, projectName, StringComparison.OrdinalIgnoreCase));
-
+                // Match the host project by name ACROSS ALL HUBS. Revit's C4R ProjectGUID is
+                // not the APS project id, so name-matching is the canonical resolution
+                // (mirrors WSPICT). NEVER fall back to a first hub — a wrong project yields
+                // wrong GUIDs and "path not found" in Create. Hard-fail if not found.
+                CurrentProject = await Acc.FindProjectByNameAcrossHubsAsync(projectName, _cts.Token);
                 if (CurrentProject == null)
                 {
-                    SetProjectLabel("Project not found", true);
+                    SetProjectLabel("Project '" + projectName + "' not found in any ACC hub", true);
                     return;
                 }
-
-                SetProjectLabel(CurrentHub.Name + " / " + CurrentProject.Name, false);
+                // Keep CurrentHub consistent with the matched project (for display / region).
+                CurrentHub = hubs.FirstOrDefault(h => string.Equals(h.Id, CurrentProject.HubId, StringComparison.OrdinalIgnoreCase));
+                SetProjectLabel((CurrentHub?.Name ?? "ACC") + " / " + CurrentProject.Name, false);
                 await BatchPane.LoadTopFoldersAsync(_cts.Token);
             }
             catch (Exception ex)

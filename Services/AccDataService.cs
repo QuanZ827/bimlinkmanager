@@ -91,6 +91,32 @@ namespace BimLinkManager.Services
             return projects;
         }
 
+        /// <summary>
+        /// Finds the project whose name matches <paramref name="projectName"/> by searching
+        /// EVERY hub (case-insensitive). Mirrors WSPICT's FindCurrentProjectByNameAsync:
+        /// Revit's C4R ProjectGUID is not the APS project id, so name-matching across all
+        /// hubs is the canonical resolution. Returns null if no hub contains it — never
+        /// falls back to a "first hub". The matched project carries its hub's Id + Region.
+        /// </summary>
+        public async Task<AccProject> FindProjectByNameAcrossHubsAsync(string projectName, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(projectName)) return null;
+            var hubs = await GetHubsAsync(ct).ConfigureAwait(false);
+            foreach (var hub in hubs)
+            {
+                var projects = await GetProjectsAsync(hub, ct).ConfigureAwait(false);
+                foreach (var p in projects)
+                {
+                    if (string.Equals(p.Name, projectName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // p.HubId / p.Region were set from this hub in GetProjectsAsync.
+                        return p;
+                    }
+                }
+            }
+            return null;
+        }
+
         public async Task<List<AccFolder>> GetTopFoldersAsync(AccProject project, CancellationToken ct = default)
         {
             var folders = new List<AccFolder>();
