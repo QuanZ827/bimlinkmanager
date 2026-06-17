@@ -18,6 +18,12 @@ namespace BimLinkManager
         public const string BatchLinkButtonText = "Batch\nLink";
         public const string BatchLinkTooltip = "Batch link cloud models from ACC into the current project.";
 
+        // Ribbon icon manifest-resource names (EmbeddedResource = RootNamespace + dotted folder path
+        // + filename). Loaded via Assembly.GetManifestResourceStream in App.cs.
+        public const string IconResource96 = "BimLinkManager.Resources.icon_96.png";
+        public const string IconResource32 = "BimLinkManager.Resources.icon_32.png";
+        public const string IconResource16 = "BimLinkManager.Resources.icon_16.png";
+
         public const string ApsBaseUrl = "https://developer.api.autodesk.com";
         public const string DefaultCloudRegion = "US";
 

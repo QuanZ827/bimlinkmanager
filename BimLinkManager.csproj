@@ -10,9 +10,9 @@
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <AssemblyName>BimLinkManager</AssemblyName>
     <RootNamespace>BimLinkManager</RootNamespace>
-    <Version>1.0.10</Version>
-    <AssemblyVersion>1.0.10.0</AssemblyVersion>
-    <FileVersion>1.0.10.0</FileVersion>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
     <Company>Zhequan Zhang</Company>
     <Authors>Zhequan Zhang</Authors>
     <Product>BIM Link Manager</Product>
@@ -80,11 +80,17 @@
     <Reference Include="UIAutomationTypes" />
   </ItemGroup>
 
-  <!-- Embedded resources: icons + fonts -->
+  <!-- Ribbon icons: EmbeddedResource so App.cs can load them via Assembly.GetManifestResourceStream
+       (pack:// URIs do NOT resolve during Revit add-in startup, which is why the icon never showed).
+       No Condition on purpose — a missing icon must FAIL the build, not silently vanish. -->
   <ItemGroup>
-    <Resource Include="Resources\icon_16.png" Condition="Exists('Resources\icon_16.png')" />
-    <Resource Include="Resources\icon_32.png" Condition="Exists('Resources\icon_32.png')" />
-    <Resource Include="Resources\icon_96.png" Condition="Exists('Resources\icon_96.png')" />
+    <EmbeddedResource Include="Resources\icon_16.png" />
+    <EmbeddedResource Include="Resources\icon_32.png" />
+    <EmbeddedResource Include="Resources\icon_96.png" />
+  </ItemGroup>
+
+  <!-- Embedded UI resources: fonts -->
+  <ItemGroup>
     <Resource Include="Resources\Fonts\HankenGrotesk-Regular.ttf" />
     <Resource Include="Resources\Fonts\HankenGrotesk-Medium.ttf" />
     <Resource Include="Resources\Fonts\HankenGrotesk-SemiBold.ttf" />

@@ -108,14 +108,15 @@
 
                         <Button Grid.Column="1"
                                 Style="{StaticResource BtnGhost}"
-                                Click="RefreshFolderBtn_Click">
+                                Click="RefreshFolderBtn_Click"
+                                ToolTip="Reload the selected folder's models">
                             <StackPanel Orientation="Horizontal">
                                 <Path Style="{StaticResource IconStroke}"
                                       Data="{StaticResource IconRefresh}"
                                       StrokeThickness="1.4"
                                       Width="12" Height="12"
                                       Margin="0,0,5,0"/>
-                                <TextBlock Text="Refresh" VerticalAlignment="Center"/>
+                                <TextBlock Text="Refresh Folder" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>

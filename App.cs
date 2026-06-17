@@ -75,31 +75,61 @@ namespace BimLinkManager
 
         private static void TrySetIcons(PushButtonData data)
         {
+            // LargeImage = the 96px source scaled to 32 DIPs; Image = the 32px source scaled to 16
+            // DIPs. Mirrors WSPICT: load the EMBEDDED PNGs via GetManifestResourceStream — pack://
+            // application URIs do not resolve during Revit add-in startup, which is why the icon
+            // never showed. Failures are logged (see GetHiResRibbonIcon), not silently swallowed.
+            var large = GetHiResRibbonIcon(AppConstants.IconResource96, 32);
+            var small = GetHiResRibbonIcon(AppConstants.IconResource32, 16);
+            if (large != null) data.LargeImage = large;
+            if (small != null) data.Image = small;
+        }
+
+        /// <summary>
+        /// Load an embedded PNG via the assembly manifest and recreate it at a DPI that makes WPF
+        /// treat it as targetDip × targetDip device-independent pixels, keeping all source pixels for
+        /// sharp rendering on high-DPI screens. Mirrors WSPICT.App.GetHiResRibbonIcon.
+        /// </summary>
+        private static BitmapSource GetHiResRibbonIcon(string resourceName, int targetDip)
+        {
             try
             {
-                var asm = Assembly.GetExecutingAssembly();
-                var asmName = asm.GetName().Name;
-
-                BitmapImage Load(string size)
+                var assembly = Assembly.GetExecutingAssembly();
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
                 {
-                    var uri = new Uri("pack://application:,,,/" + asmName + ";component/Resources/icon_" + size + ".png", UriKind.Absolute);
-                    try
+                    if (stream == null)
                     {
-                        return new BitmapImage(uri);
-                    }
-                    catch
-                    {
+                        Diagnostics.Log.Warn("Ribbon icon resource not found: " + resourceName);
                         return null;
                     }
-                }
 
-                var img16 = Load("16");
-                var img32 = Load("32");
-                if (img16 != null) data.Image = img16;
-                if (img32 != null) data.LargeImage = img32;
+                    var decoder = new PngBitmapDecoder(
+                        stream,
+                        BitmapCreateOptions.PreservePixelFormat,
+                        BitmapCacheOption.OnLoad);
+                    var frame = decoder.Frames[0];
+
+                    int pixelW = frame.PixelWidth;
+                    int pixelH = frame.PixelHeight;
+                    double scaledDpi = pixelW * 96.0 / targetDip;
+
+                    int stride = (pixelW * frame.Format.BitsPerPixel + 7) / 8;
+                    byte[] pixels = new byte[stride * pixelH];
+                    frame.CopyPixels(pixels, stride, 0);
+
+                    var result = BitmapSource.Create(
+                        pixelW, pixelH,
+                        scaledDpi, scaledDpi,
+                        frame.Format, frame.Palette,
+                        pixels, stride);
+                    result.Freeze();
+                    return result;
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Diagnostics.Log.Warn("Ribbon icon load failed (" + resourceName + "): " + ex.Message);
+                return null;
             }
         }
     }

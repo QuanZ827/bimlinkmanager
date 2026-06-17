@@ -186,38 +186,14 @@
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Style="{StaticResource BtnHeaderIcon}"
-                                    ToolTip="Refresh"
+                                    ToolTip="Reload project — re-detect the ACC project and reload all folders"
                                     Click="RefreshBtn_Click">
                                 <Path Style="{StaticResource IconStroke}"
                                       Data="{StaticResource IconRefresh}"
                                       Width="14" Height="14"/>
                             </Button>
-                            <Button Style="{StaticResource BtnHeaderIcon}"
-                                    ToolTip="Project Hierarchy"
-                                    Margin="6,0,0,0">
-                                <Path Style="{StaticResource IconStroke}"
-                                      Data="{StaticResource IconHierarchy}"
-                                      Width="14" Height="14"/>
-                            </Button>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource BtnHeaderIcon}"
-                                    ToolTip="Notifications (coming soon)"
-                                    IsEnabled="False"
-                                    Margin="0,0,6,0">
-                                <Path Style="{StaticResource IconStroke}"
-                                      Data="{StaticResource IconNotifications}"
-                                      Width="14" Height="14"/>
-                            </Button>
-                            <Button Style="{StaticResource BtnHeaderIcon}"
-                                    ToolTip="Settings (coming soon)"
-                                    IsEnabled="False">
-                                <Path Style="{StaticResource IconStroke}"
-                                      Data="{StaticResource IconSettings}"
-                                      Width="14" Height="14"/>
-                            </Button>
-                        </StackPanel>
                     </Grid>
                 </Grid>
             </Border>
